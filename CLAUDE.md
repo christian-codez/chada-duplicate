@@ -1,6 +1,16 @@
 # Chada Duplicate — plugin notes for Claude
 
-**STATUS: MVP scaffold — no code yet.** This file is the contract/spec.
+**STATUS: Phase 0/1 in progress.** Scaffold (main file, autoloader, boot,
+Installer) + the marketplace **Updater** (ported, free — no license gating) are
+built on branch `feature/phase-0-scaffold`. Phases 2–6 (duplicator engine,
+list-table/editor entry points, settings, cross-sell) are not built yet — see
+`BUILD-PLAN.md`. This file remains the contract/spec.
+
+> **Design handoff** lives in `design_handoff_chada_clone/` (titled "Chada
+> Clone" — an earlier working name; the shipping product is **Chada Duplicate**).
+> `README.md` there is the authoritative UI spec; `wp-admin.css` is the value
+> spec. Build to native wp-admin APIs, inheriting core styles — do NOT port the
+> handoff CSS. Only the cross-sell panel (Screen D) is custom-styled.
 
 A **one-click duplicate / clone** plugin for posts, pages, any public custom post
 type, and **WooCommerce products** (incl. variations). Row action + bulk action +
@@ -59,6 +69,29 @@ In:
 Out (no premium tiers — this product is free): scheduled/bulk-template cloning,
 cross-site cloning, etc. If a paid clone feature is ever wanted, it belongs in a
 *different* product, not here.
+
+## Admin notices / feedback (from the design handoff)
+All clone feedback is a **native `.notice`** rendered via `admin_notices` —
+driven by a query-arg (or short transient) set on the post-clone redirect, NOT a
+custom toast/SPA. Inherit core notice styling (white bg, 4px left border, 14px
+text, dismiss "×"). Make them `.is-dismissible`. Never rely on color alone
+(WCAG AA). Exact specs:
+- **Single duplicate (success)** — `.notice.notice-success.is-dismissible`, left
+  border `#00a32a`. Copy: **`'<Title>' duplicated.`** followed by an
+  **`Edit the copy →`** link to the new draft's editor. (Handoff example:
+  `'Spring Sale Landing Page' duplicated.`)
+- **Bulk duplicate (summary)** — one notice for the whole batch, same component.
+  Copy: **`N items duplicated`**; for products append *"including variations &
+  gallery images"*. Link: **`View drafts →`**. (Handoff example:
+  `2 products duplicated`.)
+- **Editor action** — the only place with client state: the "Copy to a new
+  draft" control shows a brief **"Duplicating…"** spinner, then `window.location`
+  **redirects to the new draft** in the same editor (block + classic). No notice
+  needed there beyond the redirect.
+- **Failure/capability** — if a clone is blocked (cap/nonce) or fails, show a
+  `.notice.notice-error` with a plain reason; never silently no-op.
+- Escape all titles (`esc_html`) and the edit URL (`esc_url`); the count is an
+  integer. Title text is user-supplied — treat as untrusted.
 
 ## Architecture (one-way)
 ```

@@ -18,26 +18,32 @@ products (incl. variations). The lead-magnet that cross-sells the paid suite.
 ## Current status
 
 **Session log (newest first):**
+- 2026-06-14 (Phase 0+1) — Built scaffold (`chada-duplicate.php` main file,
+  autoloader, boot, `Installer`, `uninstall.php`) + ported the **Updater**
+  (`Licensing/UpdateClient` + `Licensing/Updater`, free — no `LicenseClient`).
+  On branch `feature/phase-0-scaffold`, awaiting review/merge. Slug stays
+  `chada-duplicate` (naming briefly flirted with "chada-clone", reverted).
 - 2026-06-05 (scaffold) — Folder + `CLAUDE.md` (MVP spec) + this plan created.
   Slug registered server-side in CLM. No plugin code yet.
 
-**Next up:** Phase 0.
+**Next up:** Phase 2 (core duplicator) — after the Phase 0/1 branch is merged.
 
 ---
 
 ## Phase 0 — Scaffold
-- [ ] `chada-duplicate.php` main file: header with
+- [x] `chada-duplicate.php` main file: header with
       `Update URI: https://shop.chadacreatives.com/cdup-update`, constants
       (`CHADA_DUP_*`, `CHADA_DUP_PLATFORM_URL`), SPL autoloader, `plugins_loaded`
       boot, `uninstall.php`. No DB table. (No WooCommerce hard-dependency —
       degrade product features gracefully if WC is absent.)
 
 ## Phase 1 — Updates only (port the Updater, NOT the License)
-- [ ] Port ONLY `includes/Licensing/{UpdateClient,Updater}` from
+- [x] Port ONLY `includes/Licensing/{UpdateClient,Updater}` from
       `chada-activity-monitor`; rename `CHADA_AM_*` → `CHADA_DUP_*`, fix the
       `Update URI` host match. Do NOT port `License`/`LicenseClient` — nothing to
       gate.
-- [ ] Verify `/update-check` 200 for the free slug (no license sent).
+- [ ] Verify `/update-check` 200 for the free slug (no license sent) — needs CLM
+      reachable; verify after merge / when the platform is up.
 
 ## Phase 2 — Core duplicator (posts / pages / CPTs)
 - [ ] `Duplicator::clone($post_id)`: title (+ " (copy)" suffix), content, excerpt,
