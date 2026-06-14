@@ -1,0 +1,798 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Chada Duplicate — Design Handoff</title>
+<link rel="stylesheet" href="wp-admin.css" />
+<style>
+  :root{
+    --type-title:58px; --type-kicker:22px; --type-section:38px;
+    --type-lead:30px; --type-body:26px; --type-small:24px;
+    --call-num:21px; --call-title:26px; --call-body:23px;
+    --pad-x:96px; --pad-y:72px;
+    --ink:#1d2327; --ink-soft:#50575e; --muted:#787c82;
+    --line:#e4e6e9; --paper:#ffffff; --canvas:#f0f0f1;
+    --blue:#2271b1; --blue-deep:#135e96; --chada:#11776e; --chada-bg:#f1f7f6;
+    --mark:#cf6a1a; --mark-soft:rgba(207,106,26,.16);
+    --deck-font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
+  }
+  html,body{ margin:0; background:#0e1417; }
+  deck-stage:not(:defined){ visibility:hidden; }
+  deck-stage section{ overflow:hidden; }
+  .slide{ width:100%; height:100%; background:var(--paper); color:var(--ink);
+    font-family:var(--deck-font); position:relative; }
+  .pad{ padding:var(--pad-y) var(--pad-x); height:100%; }
+  .pad.tight{ padding:60px var(--pad-x) 56px; }
+
+  /* slide header */
+  .s-head{ display:flex; flex-direction:column; gap:8px; }
+  .kicker{ font-size:var(--type-kicker); font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--blue); }
+  .kicker.chada{ color:var(--chada); }
+  .s-title{ font-size:var(--type-title); font-weight:700; letter-spacing:-.02em; color:var(--ink); line-height:1.04; }
+  .s-title .reg{ font-weight:400; color:var(--muted); }
+
+  /* two-column mock + callouts */
+  .s-body{ display:grid; grid-template-columns:1fr 470px; gap:52px; margin-top:34px; height:calc(100% - 150px); align-items:center; }
+  .mock-wrap{ position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+  .callouts{ display:flex; flex-direction:column; gap:26px; }
+  .call{ display:grid; grid-template-columns:42px 1fr; gap:16px; align-items:start; }
+  .call .num{ width:42px; height:42px; border-radius:50%; background:var(--mark); color:#fff; font-weight:700; font-size:var(--call-num); display:grid; place-items:center; box-shadow:0 3px 10px var(--mark-soft); }
+  .call h4{ font-size:var(--call-title); font-weight:700; color:var(--ink); margin:6px 0 5px; line-height:1.12; }
+  .call p{ font-size:var(--call-body); color:var(--ink-soft); line-height:1.42; }
+  .call p code{ font-family:Consolas,Monaco,monospace; font-size:.86em; background:#f0f0f1; padding:1px 6px; border-radius:4px; color:#2c3338; }
+
+  /* pins on mockups */
+  .pin{ position:absolute; width:36px; height:36px; border-radius:50%; background:var(--mark); color:#fff; font-weight:700; font-size:20px; display:grid; place-items:center; z-index:25; box-shadow:0 5px 14px rgba(0,0,0,.3), 0 0 0 5px var(--mark-soft); }
+  .markpill{ position:absolute; background:var(--mark); color:#fff; font-size:16px; font-weight:700; letter-spacing:.01em; padding:5px 12px; border-radius:999px; box-shadow:0 4px 12px rgba(0,0,0,.25); white-space:nowrap; z-index:26; }
+
+  /* framed mockup card (cropped focus) */
+  .frame{ background:var(--canvas); border-radius:12px; box-shadow:0 22px 56px -22px rgba(15,23,42,.42), 0 0 0 1px rgba(15,23,42,.07); overflow:hidden; }
+  .frame.p0{ padding:0; }
+
+  /* ===== Title slide ===== */
+  .title-slide{ background:#1d2327; color:#f0f0f1; }
+  .title-slide .pad{ display:flex; flex-direction:column; justify-content:center; }
+  .title-eyebrow{ display:flex; align-items:center; gap:14px; font-size:24px; font-weight:600; letter-spacing:.04em; color:#a7c7e0; }
+  .title-eyebrow .chip{ display:inline-flex; align-items:center; gap:9px; padding:8px 16px; border:1px solid rgba(255,255,255,.18); border-radius:999px; color:#dfe3e6; font-size:21px; }
+  .title-eyebrow .chip svg{ width:20px; height:20px; }
+  .title-slide h1{ font-size:108px; font-weight:800; letter-spacing:-.03em; line-height:.98; margin:34px 0 0; }
+  .title-slide h1 .free{ display:block; font-size:38px; font-weight:600; letter-spacing:0; color:#7fb2dc; margin-top:22px; }
+  .title-slide .lede{ font-size:30px; color:#c3c4c7; max-width:1020px; margin-top:30px; line-height:1.5; }
+  .title-meta{ display:flex; gap:56px; margin-top:60px; }
+  .title-meta .m .l{ font-size:20px; text-transform:uppercase; letter-spacing:.12em; color:#7c8995; font-weight:700; }
+  .title-meta .m .v{ font-size:26px; color:#f0f0f1; margin-top:8px; font-weight:500; }
+
+  /* ===== Overview ===== */
+  .ov{ display:grid; grid-template-columns:1fr 1fr; gap:60px; margin-top:28px; height:calc(100% - 150px); align-items:start; }
+  .ov-lede{ font-size:28px; line-height:1.45; color:var(--ink-soft); }
+  .ov-lede b{ color:var(--ink); font-weight:700; }
+  .principles{ display:flex; flex-direction:column; gap:18px; margin-top:26px; }
+  .principle{ display:grid; grid-template-columns:auto 1fr; gap:18px; align-items:start; }
+  .principle .pn{ font-size:24px; font-weight:800; color:var(--blue); width:42px; }
+  .principle h4{ font-size:25px; font-weight:700; color:var(--ink); margin-bottom:4px; }
+  .principle p{ font-size:22px; color:var(--ink-soft); line-height:1.4; }
+  .map{ background:var(--canvas); border-radius:16px; padding:30px; border:1px solid var(--line); }
+  .map h3{ font-size:23px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); font-weight:700; margin-bottom:18px; }
+  .touch{ display:flex; align-items:center; gap:20px; padding:15px 0; border-top:1px solid var(--line); }
+  .touch:first-of-type{ border-top:none; }
+  .touch .ti{ width:48px; height:48px; border-radius:12px; background:#fff; border:1px solid var(--line); display:grid; place-items:center; color:var(--blue); flex:none; }
+  .touch .ti svg{ width:26px; height:26px; }
+  .touch .tt h4{ font-size:24px; font-weight:700; color:var(--ink); }
+  .touch .tt p{ font-size:23px; color:var(--ink-soft); margin-top:3px; }
+  .touch .badge{ margin-left:auto; font-size:18px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:#fff; background:var(--blue); padding:5px 12px; border-radius:999px; }
+  .touch .badge.chada{ background:var(--chada); }
+
+  /* ===== Style guide ===== */
+  .sg{ display:grid; grid-template-columns:1.05fr 1fr; gap:60px; margin-top:30px; height:calc(100% - 150px); align-content:start; }
+  .sg-block h3{ font-size:22px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); font-weight:700; margin-bottom:20px; }
+  .swatches{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+  .swatch .chip{ height:64px; border-radius:10px; border:1px solid rgba(0,0,0,.08); }
+  .swatch .nm{ font-size:20px; font-weight:600; color:var(--ink); margin-top:8px; }
+  .swatch .hex{ font-size:18px; color:var(--muted); font-family:Consolas,Monaco,monospace; }
+  .type-spec{ display:flex; flex-direction:column; gap:16px; }
+  .type-row{ display:flex; align-items:baseline; gap:20px; border-bottom:1px solid var(--line); padding-bottom:14px; }
+  .type-row .tlabel{ font-size:20px; color:var(--muted); width:140px; flex:none; font-family:Consolas,Monaco,monospace; }
+  .type-row .tsample{ color:var(--ink); font-family:var(--deck-font); }
+  .meta-list{ display:flex; flex-direction:column; gap:14px; }
+  .meta-list .ml{ display:flex; gap:16px; align-items:baseline; font-size:22px; }
+  .meta-list .ml .k{ width:180px; flex:none; color:var(--muted); font-weight:600; }
+  .meta-list .ml .v{ color:var(--ink); }
+  .meta-list .ml .v code{ font-family:Consolas,Monaco,monospace; font-size:.85em; background:#f0f0f1; padding:2px 7px; border-radius:4px; }
+
+  .comp-grid{ display:grid; grid-template-columns:1fr 1fr; gap:34px 48px; margin-top:30px; padding:40px 44px; border-radius:14px; border:1px solid var(--wp-border-light); align-content:start; }
+  .comp{ }
+  .comp .clabel{ font-size:22px; font-weight:700; color:var(--ink); margin-bottom:14px; display:flex; align-items:center; gap:12px; }
+  .comp .clabel .tag{ font-size:16px; font-weight:600; color:var(--muted); background:#f0f0f1; border:1px solid var(--line); padding:3px 10px; border-radius:999px; font-family:Consolas,Monaco,monospace; }
+  .comp .demo{ background:#fff; border:1px solid var(--line); border-radius:10px; padding:20px; }
+
+  /* footer brand on light slides */
+  .foot{ position:absolute; left:var(--pad-x); bottom:34px; display:flex; align-items:center; gap:12px; font-size:18px; color:var(--muted); font-weight:600; letter-spacing:.02em; }
+  .foot .dot{ width:8px; height:8px; border-radius:50%; background:var(--chada); }
+
+  /* closing / behavior dark slide */
+  .dark{ background:#1d2327; color:#f0f0f1; }
+  .behav{ display:grid; grid-template-columns:1fr 1fr; gap:60px; margin-top:38px; height:calc(100% - 150px); align-content:start; }
+  .bcol h3{ font-size:23px; text-transform:uppercase; letter-spacing:.1em; color:#7fb2dc; font-weight:700; margin-bottom:22px; }
+  .flowstep{ display:grid; grid-template-columns:40px 1fr; gap:16px; padding:16px 0; border-top:1px solid rgba(255,255,255,.1); }
+  .flowstep:first-of-type{ border-top:none; }
+  .flowstep .fn{ width:40px; height:40px; border-radius:50%; background:rgba(127,178,220,.16); color:#9fc4e4; display:grid; place-items:center; font-weight:700; font-size:20px; }
+  .flowstep h4{ font-size:25px; font-weight:700; color:#f0f0f1; margin-bottom:4px; }
+  .flowstep p{ font-size:21px; color:#b4bcc4; line-height:1.4; }
+  .flowstep p .seq{ color:#f0f0f1; font-weight:600; }
+  .tradeoff{ display:flex; gap:14px; padding:15px 0; border-top:1px solid rgba(255,255,255,.1); font-size:22px; color:#c3c4c7; line-height:1.4; }
+  .tradeoff:first-of-type{ border-top:none; }
+  .tradeoff svg{ width:24px; height:24px; color:var(--mark); flex:none; margin-top:2px; }
+  .tradeoff b{ color:#f0f0f1; font-weight:700; }
+
+  /* gutenberg two-up */
+  .editor-grid{ display:grid; grid-template-columns:1fr 1fr; gap:44px; margin-top:30px; height:calc(100% - 150px); align-items:start; }
+  .ed-col{ display:flex; flex-direction:column; }
+  .ed-cap{ font-size:24px; font-weight:700; color:var(--ink); margin-bottom:6px; display:flex; align-items:center; gap:12px; }
+  .ed-cap .tag{ font-size:16px; font-weight:600; color:#fff; background:var(--blue); padding:4px 11px; border-radius:999px; }
+  .ed-sub{ font-size:21px; color:var(--ink-soft); margin-bottom:18px; line-height:1.4; }
+  .ed-note{ margin-top:20px; display:flex; align-items:center; gap:14px; background:var(--canvas); border:1px solid var(--line); border-radius:10px; padding:16px 20px; font-size:21px; color:var(--ink-soft); }
+  .ed-note .dup-anim{ display:inline-flex; align-items:center; gap:9px; color:var(--blue); font-weight:600; }
+
+  /* cross-sell panel (Screen D) */
+  .chada-panel{ background:#fff; border:1px solid var(--line); border-top:3px solid var(--chada); border-radius:10px; box-shadow:0 18px 48px -22px rgba(15,23,42,.34); overflow:hidden; }
+  .chada-head{ display:flex; align-items:center; gap:16px; padding:24px 28px 20px; }
+  .chada-mark{ width:48px; height:48px; border-radius:11px; background:var(--chada); display:grid; place-items:center; color:#fff; flex:none; }
+  .chada-mark svg{ width:26px; height:26px; }
+  .chada-head .ct h3{ font-size:27px; font-weight:700; color:var(--ink); }
+  .chada-head .ct p{ font-size:20px; color:var(--ink-soft); margin-top:3px; }
+  .chada-dismiss{ margin-left:auto; display:flex; align-items:center; gap:8px; color:var(--muted); font-size:19px; border:1px solid var(--line); padding:8px 14px; border-radius:7px; }
+  .chada-dismiss svg{ width:16px; height:16px; }
+  .chada-cards{ display:grid; grid-template-columns:repeat(5,1fr); gap:18px; padding:6px 28px 28px; }
+  .ccard{ background:var(--chada-bg); border:1px solid #dcebe9; border-radius:10px; padding:20px 18px; display:flex; flex-direction:column; gap:12px; }
+  .ccard .ci{ width:44px; height:44px; border-radius:10px; background:#fff; border:1px solid #d3e6e3; display:grid; place-items:center; color:var(--chada); }
+  .ccard .ci svg{ width:24px; height:24px; }
+  .ccard h4{ font-size:22px; font-weight:700; color:var(--ink); }
+  .ccard p{ font-size:19px; color:var(--ink-soft); line-height:1.38; flex:1; }
+  .ccard .more{ font-size:19px; font-weight:600; color:var(--chada); display:inline-flex; align-items:center; gap:6px; }
+  .ccard .more svg{ width:14px; height:14px; }
+
+  @media (prefers-reduced-motion:no-preference){
+    [data-deck-active] .anim-up{ animation:au .55s cubic-bezier(.2,.7,.2,1) both; }
+    [data-deck-active] .anim-up.d1{ animation-delay:.06s; }
+    [data-deck-active] .anim-up.d2{ animation-delay:.12s; }
+    [data-deck-active] .anim-up.d3{ animation-delay:.18s; }
+    @keyframes au{ from{ opacity:0; transform:translateY(16px); } to{ opacity:1; transform:none; } }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ ICON SPRITE ============ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="ico" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></g>
+  </defs>
+  <symbol id="i-dashboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 13l4-3"/><path d="M4.5 13h1M18.5 13h1M12 5.5v1"/></symbol>
+  <symbol id="i-post" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4l5 5-9 9-5 1 1-5z"/><path d="M13 6l5 5"/></symbol>
+  <symbol id="i-media" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><circle cx="12" cy="12.5" r="3"/><path d="M7 6l1.5-2h7L17 6"/></symbol>
+  <symbol id="i-page" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 12h6M9 16h6"/></symbol>
+  <symbol id="i-comments" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-4 3v-3H4z"/></symbol>
+  <symbol id="i-appearance" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 14l7-9 5 4-7 9-5 1z"/><path d="M5 14l2 3"/></symbol>
+  <symbol id="i-plugins" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v4M15 3v4M6 7h12v5a6 6 0 01-12 0z"/><path d="M12 18v3"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3.5 19a5.5 5.5 0 0111 0"/><path d="M16 5.5a3 3 0 010 5.6M16.5 19a5.5 5.5 0 00-2-4.3"/></symbol>
+  <symbol id="i-tools" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6a3.5 3.5 0 00-4.5 4.5L4 16l4 4 5.5-5.5A3.5 3.5 0 0018 10l-2.5 2.5L13 10z"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></symbol>
+  <symbol id="i-woo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h2l2 10h9l2-7H7"/><circle cx="9" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/></symbol>
+  <symbol id="i-product" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7l8-4 8 4v9l-8 4-8-4z"/><path d="M4 7l8 4 8-4M12 11v9"/></symbol>
+  <symbol id="i-megaphone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4l11 5V5L4 10z"/><path d="M4 12H3M7 14v3l3 1"/><path d="M18 9a4 4 0 010 6"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-wp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M5 9l3.5 9L11 11M11 11l2.5 7L17 9M7 9h4M14 9h3" stroke-width="1.3"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0112 0c0 5 2 6 2 6H4s2-1 2-6z"/><path d="M10 20a2 2 0 004 0"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6"/><path d="M16 16l4 4"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M9 3v4M15 3v4"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-img" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.6"/><path d="M21 16l-5-5-7 7"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h8"/></symbol>
+  <symbol id="i-dots" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="6" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="18" r="1.6"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7L4 12l5 5"/><path d="M4 12h11a5 5 0 010 10h-1"/></symbol>
+  <symbol id="i-redo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7l5 5-5 5"/><path d="M20 12H9a5 5 0 000 10h1"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V4h11l-2 4 2 4H6"/></symbol>
+  <!-- cross-sell -->
+  <symbol id="i-cart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.2 11h10l1.8-8H6"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/><path d="M16 8l-2.5 2.5M13.5 8L16 10.5" stroke-width="1.4"/></symbol>
+  <symbol id="i-ai" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8z"/><path d="M18 15l.9 2.1L21 18l-2.1.9L18 21l-.9-2.1L15 18l2.1-.9z"/></symbol>
+  <symbol id="i-schema" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 11l7.6-4M8.2 13l7.6 4"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+  <symbol id="i-activity" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-6 4 12 2-6h6"/></symbol>
+</svg>
+
+<deck-stage width="1920" height="1080">
+
+  <!-- ===================== 1 · TITLE ===================== -->
+  <section data-label="Title" data-om-validate="no_overflowing_text,no_overlapping_text">
+    <div class="slide title-slide">
+      <div class="pad">
+        <div class="title-eyebrow">
+          <span class="chip"><svg><use href="#i-wp"/></svg> WordPress admin plugin</span>
+          <span class="chip"><svg><use href="#i-copy"/></svg> Design handoff</span>
+        </div>
+        <h1>Chada Duplicate
+          <span class="free">One-click cloning for posts, pages, CPTs & WooCommerce products</span>
+        </h1>
+        <p class="lede">Hi-fidelity mockups and a build spec for a plugin that lives <em>inside</em> wp-admin — native row actions, bulk actions, an editor button, one settings page, and a single tasteful cross-sell.</p>
+        <div class="title-meta">
+          <div class="m"><div class="l">Surface</div><div class="v">Native wp-admin · Fresh scheme</div></div>
+          <div class="m"><div class="l">Audience</div><div class="v">WordPress editors & admins</div></div>
+          <div class="m"><div class="l">Screens</div><div class="v">List · Editor · Settings · Cross-sell</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 2 · OVERVIEW ===================== -->
+  <section data-label="What We're Building" data-om-validate="no_overflowing_text,no_overlapping_text">
+    <div class="slide">
+      <div class="pad">
+        <div class="s-head">
+          <span class="kicker">Overview</span>
+          <h1 class="s-title">What we're building</h1>
+        </div>
+        <div class="ov">
+          <div>
+            <p class="ov-lede"><b>One obvious click that copies everything that matters</b> — fields, taxonomies, meta, the featured image, and for products the attributes, variations and gallery.</p>
+            <div class="principles">
+              <div class="principle"><div class="pn">01</div><div><h4>Native & unremarkable</h4><p>It should feel like it was always part of WordPress. No custom palette, no new layouts.</p></div></div>
+              <div class="principle"><div class="pn">02</div><div><h4>Fast & complete</h4><p>Clone a row, a selection, or the post you're editing — the copy lands as a ready-to-edit draft.</p></div></div>
+              <div class="principle"><div class="pn">03</div><div><h4>One tasteful cross-sell</h4><p>A single dismissible panel on the settings page. Never a store-wide nag or activation redirect.</p></div></div>
+            </div>
+          </div>
+          <div class="map">
+            <h3>Where it appears</h3>
+            <div class="touch"><div class="ti"><svg><use href="#i-list"/></svg></div><div class="tt"><h4>List-table row + bulk actions</h4><p>Posts, Pages, CPTs, Products</p></div><span class="badge">Screen A</span></div>
+            <div class="touch"><div class="ti"><svg><use href="#i-copy"/></svg></div><div class="tt"><h4>Editor button</h4><p>Block panel + classic metabox</p></div><span class="badge">Screen B</span></div>
+            <div class="touch"><div class="ti"><svg><use href="#i-settings"/></svg></div><div class="tt"><h4>Settings page</h4><p>Types, behavior, meta, roles</p></div><span class="badge">Screen C</span></div>
+            <div class="touch"><div class="ti"><svg><use href="#i-megaphone"/></svg></div><div class="tt"><h4>"More by Chada" panel</h4><p>Settings page only · dismissible</p></div><span class="badge chada">Screen D</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 3 · STYLE GUIDE: COLOR & TYPE ===================== -->
+  <section data-label="Visual Foundations" data-om-validate="no_overflowing_text,no_overlapping_text">
+    <div class="slide">
+      <div class="pad">
+        <div class="s-head">
+          <span class="kicker">Style guide · 1 of 2</span>
+          <h1 class="s-title">Visual foundations — color & type</h1>
+        </div>
+        <div class="sg">
+          <div class="sg-block">
+            <h3>Inherited admin palette — Fresh scheme</h3>
+            <div class="swatches">
+              <div class="swatch"><div class="chip" style="background:#1d2327"></div><div class="nm">Admin chrome</div><div class="hex">#1d2327</div></div>
+              <div class="swatch"><div class="chip" style="background:#2271b1"></div><div class="nm">Primary / link</div><div class="hex">#2271b1</div></div>
+              <div class="swatch"><div class="chip" style="background:#135e96"></div><div class="nm">Primary hover</div><div class="hex">#135e96</div></div>
+              <div class="swatch"><div class="chip" style="background:#f0f0f1;border-color:#c3c4c7"></div><div class="nm">Canvas</div><div class="hex">#f0f0f1</div></div>
+              <div class="swatch"><div class="chip" style="background:#00a32a"></div><div class="nm">Success</div><div class="hex">#00a32a</div></div>
+              <div class="swatch"><div class="chip" style="background:#dba617"></div><div class="nm">Warning</div><div class="hex">#dba617</div></div>
+              <div class="swatch"><div class="chip" style="background:#b32d2e"></div><div class="nm">Destructive</div><div class="hex">#b32d2e</div></div>
+              <div class="swatch"><div class="chip" style="background:#11776e"></div><div class="nm">Chada accent</div><div class="hex">#11776e</div></div>
+            </div>
+            <h3 style="margin-top:24px">Defaults & tokens</h3>
+            <div class="meta-list">
+              <div class="ml"><span class="k">Font stack</span><span class="v">System&nbsp;UI · Segoe&nbsp;UI · Roboto</span></div>
+              <div class="ml"><span class="k">Accent usage</span><span class="v">Chada teal — <b>Screen&nbsp;D only</b></span></div>
+              <div class="ml"><span class="k">Status</span><span class="v">Icon + text — never color alone</span></div>
+            </div>
+          </div>
+          <div class="sg-block">
+            <h3>Type scale — wp-admin native</h3>
+            <div class="type-spec">
+              <div class="type-row"><span class="tlabel">Page h1 · 23</span><span class="tsample" style="font-size:34px;font-weight:400">Pages</span></div>
+              <div class="type-row"><span class="tlabel">Section h2 · 18</span><span class="tsample" style="font-size:27px;font-weight:600">Copy behavior</span></div>
+              <div class="type-row"><span class="tlabel">Table · 14</span><span class="tsample" style="font-size:24px;font-weight:600;color:#2271b1">Spring Sale Landing Page</span></div>
+              <div class="type-row"><span class="tlabel">Body · 13</span><span class="tsample" style="font-size:24px">Copies fields, taxonomies, meta & media.</span></div>
+              <div class="type-row" style="border-bottom:none"><span class="tlabel">Row action · 13</span><span class="tsample" style="font-size:24px;color:#2271b1;font-weight:600">Duplicate</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="foot"><span class="dot"></span> Chada Duplicate · Design Handoff</div>
+    </div>
+  </section>
+
+  <!-- ===================== 4 · STYLE GUIDE: COMPONENTS ===================== -->
+  <section data-label="Component Kit" data-om-validate="no_overflowing_text,no_overlapping_text">
+    <div class="slide">
+      <div class="pad">
+        <div class="s-head">
+          <span class="kicker">Style guide · 2 of 2</span>
+          <h1 class="s-title">Component kit — reuse, don't reinvent</h1>
+        </div>
+        <div class="comp-grid wp">
+          <div class="comp">
+            <div class="clabel">Row actions <span class="tag">.row-actions</span></div>
+            <div class="demo">
+              <div class="row-title">Spring Sale Landing Page</div>
+              <div class="row-actions" style="visibility:visible">Edit <span class="sep">|</span> Quick&nbsp;Edit <span class="sep">|</span> <a class="dup">Duplicate</a> <span class="sep">|</span> <a class="trash">Trash</a> <span class="sep">|</span> View</div>
+            </div>
+          </div>
+          <div class="comp">
+            <div class="clabel">Bulk actions <span class="tag">&lt;select&gt; + .button</span></div>
+            <div class="demo" style="display:flex;gap:8px;align-items:center">
+              <span class="wp-select" style="display:inline-flex;align-items:center">Duplicate</span>
+              <span class="button">Apply</span>
+              <span style="margin-left:auto;color:#646970;font-size:14px">2 items</span>
+            </div>
+          </div>
+          <div class="comp">
+            <div class="clabel">Success notice <span class="tag">.notice-success</span></div>
+            <div class="demo" style="padding:0;background:transparent;border:none">
+              <div class="notice notice-success" style="margin:0">'Spring Sale Landing Page' duplicated. <a>Edit the copy →</a><button class="dismiss"><svg><use href="#i-x"/></svg></button></div>
+            </div>
+          </div>
+          <div class="comp">
+            <div class="clabel">Buttons <span class="tag">.button / -primary</span></div>
+            <div class="demo" style="display:flex;gap:12px;align-items:center">
+              <span class="button-primary button">Save Changes</span>
+              <span class="button">Cancel</span>
+              <span class="page-title-action">Add New Page</span>
+            </div>
+          </div>
+          <div class="comp">
+            <div class="clabel">Form-table row <span class="tag">.form-table</span></div>
+            <div class="demo" style="padding:6px 16px">
+              <table class="form-table"><tr><th style="width:150px;padding:10px 10px 10px 0;font-size:14px">Default status</th><td style="padding:10px"><div class="radio-row"><span class="wp-radio on"></span> Draft</div><div class="radio-row" style="margin-bottom:0"><span class="wp-radio"></span> Same as original</div></td></tr></table>
+            </div>
+          </div>
+          <div class="comp">
+            <div class="clabel">Editor action <span class="tag">block panel</span></div>
+            <div class="demo">
+              <div class="gb-action" style="border-top:none;padding:4px 0"><svg><use href="#i-copy"/></svg> Copy to a new draft</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="foot"><span class="dot"></span> Chada Duplicate · Design Handoff</div>
+    </div>
+  </section>
+
+  <!-- ===================== 5 · LIST TABLE — POSTS/PAGES ===================== -->
+  <section data-label="List Table — Row & Result" data-om-validate="no_overflowing_text,no_overlapping_text">
+    <div class="slide">
+      <div class="pad tight">
+        <div class="s-head">
+          <span class="kicker">Screen A · States A1 + A4</span>
+          <h1 class="s-title">List table — row action & result</h1>
+        </div>
+        <div class="s-body">
+          <div class="mock-wrap">
+            <div class="browser" style="width:100%;position:relative">
+              <div class="browser-bar">
+                <div class="browser-dots"><i></i><i></i><i></i></div>
+                <div class="browser-url"><svg><use href="#i-lock"/></svg> example.com/wp-admin/edit.php?post_type=page</div>
+              </div>
+              <div class="wp">
+                <div class="adminbar">
+                  <span class="ab-item"><svg><use href="#i-wp"/></svg></span>
+                  <span class="ab-item"><svg><use href="#i-bell"/></svg> 2</span>
+                  <span class="ab-item"><svg><use href="#i-plus"/></svg> New</span>
+                  <span class="ab-spacer"></span>
+                  <span class="ab-item howdy">Howdy, Mara <span class="ab-avatar"></span></span>
+                </div>
+                <div class="wp-shell">
+                  <nav class="adminmenu">
+                    <div class="mi"><svg><use href="#i-dashboard"/></svg> Dashboard</div>
+                    <div class="mi"><svg><use href="#i-post"/></svg> Posts</div>
+                    <div class="mi"><svg><use href="#i-media"/></svg> Media</div>
+                    <div class="mi current"><svg><use href="#i-page"/></svg> Pages</div>
+                    <div class="submenu"><a class="current">All Pages</a><a>Add New</a></div>
+                    <div class="mi"><svg><use href="#i-comments"/></svg> Comments</div>
+                    <div class="sep"></div>
+                    <div class="mi"><svg><use href="#i-appearance"/></svg> Appearance</div>
+                    <div class="mi"><svg><use href="#i-plugins"/></svg> Plugins</div>
+                    <div class="mi"><svg><use href="#i-settings"/></svg> Settings</div>
+                  </nav>
+                  <div class="wp-content">
+                    <div class="wp-heading"><h1>Pages</h1><span class="page-title-action">Add New Page</span></div>
+                    <div class="notice notice-success">
+                      <strong>'Spring Sale Landing Page'</strong> duplicated. <a>Edit the copy →</a>
+                      <button class="dismiss"><svg><use href="#i-x"/></svg></button>
+                    </div>
+                    <div class="wp-filter">All <b>(13)</b> <span class="sep">|</span> Published (11) <span class="sep">|</span> Drafts (2)</div>
+                    <table class="wp-list-table">
+                      <thead><tr>
+                        <th class="check"><span class="wp-check"></span></th>
+                        <th class="col-title">Title</th>
+                        <th>Author</th>
+                        <th><svg style="width:16px;height:16px;color:#646970" ><use href="#i-comments"/></svg></th>
+                        <th>Date</th>
+                      </tr></thead>
+                      <tbody>
+                        <tr class="selected">
+                          <td class="check"><span class="wp-check"></span></td>
+                          <td><a class="row-title">Spring Sale Landing Page <span class="row-state">— Draft</span></a></td>
+                          <td class="author-cell"><a>mara</a></td>
+                          <td>—</td>
+                          <td class="date-cell">Last Modified<br/>2 mins ago</td>
+                        </tr>
+                        <tr class="show-actions alternate">
+                          <td class="check"><span class="wp-check"></span></td>
+                          <td><a class="row-title">Spring Sale Landing Page</a>
+                            <div class="row-actions">Edit <span class="sep">|</span> Quick&nbsp;Edit <span class="sep">|</span> <a class="dup">Duplicate</a> <span class="sep">|</span> <a class="trash">Trash</a> <span class="sep">|</span> View</div></td>
+                          <td class="author-cell"><a>mara</a></td>
+                          <td>—</td>
+                          <td class="date-cell">Published<br/>2025/05/28</td>
+                        </tr>
+                        <tr>
+                          <td class="check"><span class="wp-check"></span></td>
+                          <td><a class="row-title">About</a></td>
+                          <td class="author-cell"><a>mara</a></td>
+                          <td>—</td>
+                          <td class="date-cell">Published<br/>2025/03/02</td>
+                        </tr>
+                        <tr class="alternate">
+                          <td class="check"><span class="wp-check"></span></td>
+                          <td><a class="row-title">Contact</a></td>
+                          <td class="author-cell"><a>devon</a></td>
+                          <td>2</td>
+                          <td class="date-cell">Published<br/>2025/02/14</td>
+                        </tr>
+                        <tr>
+                          <td class="check"><span class="wp-check"></span></td>
+                          <td><a class="row-title">Privacy Policy <span class="row-state">— Draft</span></a></td>
+                          <td class="author-cell"><a>mara</a></td>
+                          <td>—</td>
+                          <td class="date-cell">Last Modified<br/>2024/11/30</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              <div class="pin" style="left:660px; top:342px">1</div>
+              <div class="pin" style="left:700px; top:138px">2</div>
+              <div class="pin" style="left:300px; top:270px">3</div>
+            </div>
+          </div>
+          <aside class="callouts">
+            <div class="call"><div class="num">1</div><div><h4>Hover reveals "Duplicate"</h4><p>Sits inline with Edit · Quick&nbsp;Edit · Trash · View — same weight, same blue. Hidden until row hover, exactly like every native row action.</p></div></div>
+            <div class="call"><div class="num">2</div><div><h4>Success notice</h4><p>Dismissible <code>.notice-success</code>: <em>"'Spring Sale Landing Page' duplicated. Edit the copy →"</em> linking straight to the new draft.</p></div></div>
+            <div class="call"><div class="num">3</div><div><h4>The copy, as a draft</h4><p>Lands at the top as <code>… (copy)</code> — Draft, ready to edit. Same action on Posts, Pages and any public CPT.</p></div></div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 6 · LIST TABLE — PRODUCTS + BULK ===================== -->
+  <section data-label="Products & Bulk Actions" data-om-validate="no_overflowing_text,no_overlapping_text">
+    <div class="slide">
+      <div class="pad tight">
+        <div class="s-head">
+          <span class="kicker">Screen A · States A2 + A3</span>
+          <h1 class="s-title">List table — products & bulk actions</h1>
+        </div>
+        <div class="s-body">
+          <div class="mock-wrap">
+            <div class="frame p0" style="width:100%;position:relative">
+              <div class="wp">
+                <div class="wp-content" style="padding:18px 22px 26px">
+                  <div class="wp-heading"><h1>Products</h1><span class="page-title-action">Add New</span></div>
+                  <div class="notice notice-success">
+                    <strong>2 products duplicated</strong> — including variations &amp; gallery images. <a>View drafts →</a>
+                    <button class="dismiss"><svg><use href="#i-x"/></svg></button>
+                  </div>
+                  <div class="tablenav" style="position:relative">
+                    <div class="bulkactions" style="position:relative">
+                      <span class="wp-select open" style="display:inline-flex;align-items:center;min-width:150px">Duplicate</span>
+                      <div class="select-pop">
+                        <div class="opt">Bulk actions</div>
+                        <div class="opt">Edit</div>
+                        <div class="opt sel">Duplicate</div>
+                        <div class="opt">Move to Trash</div>
+                      </div>
+                    </div>
+                    <span class="button">Apply</span>
+                    <span class="displaying-num">24 items</span>
+                    <span class="pager"><span class="pg disabled">‹</span><span class="cur">1 of 2</span><span class="pg">›</span></span>
+                  </div>
+                  <table class="wp-list-table">
+                    <thead><tr>
+                      <th class="check"><span class="wp-check checked"></span></th>
+                      <th class="thumb-cell"><svg style="width:16px;height:16px;color:#646970"><use href="#i-img"/></svg></th>
+                      <th class="col-title">Name</th>
+                      <th>SKU</th>
+                      <th>Stock</th>
+                      <th>Price</th>
+                      <th><svg style="width:15px;height:15px;color:#646970"><use href="#i-flag"/></svg></th>
+                      <th>Date</th>
+                    </tr></thead>
+                    <tbody>
+                      <tr class="selected show-actions">
+                        <td class="check"><span class="wp-check checked"></span></td>
+                        <td class="thumb-cell"><div class="ph"><svg><use href="#i-img"/></svg></div></td>
+                        <td><a class="row-title">Trail Runner GTX Shoe</a> <span class="row-state">— Variable product</span>
+                          <div class="row-actions">Edit <span class="sep">|</span> Quick&nbsp;Edit <span class="sep">|</span> <a class="dup">Duplicate</a> <span class="sep">|</span> <a class="trash">Trash</a> <span class="sep">|</span> View</div></td>
+                        <td class="sku">TRG-GTX</td>
+                        <td class="stock-in">In stock</td>
+                        <td class="price">$149.00</td>
+                        <td><span class="featured-star">★</span></td>
+                        <td class="date-cell">2025/04/19</td>
+                      </tr>
+                      <tr class="selected alternate">
+                        <td class="check"><span class="wp-check checked"></span></td>
+                        <td class="thumb-cell"><div class="ph"><svg><use href="#i-img"/></svg></div></td>
+                        <td><a class="row-title">Summit 30L Daypack</a></td>
+                        <td class="sku">SMT-30</td>
+                        <td class="stock-in">In stock</td>
+                        <td class="price">$89.00</td>
+                        <td><span style="color:#dcdcde">☆</span></td>
+                        <td class="date-cell">2025/04/02</td>
+                      </tr>
+                      <tr>
+                        <td class="check"><span class="wp-check"></span></td>
+                        <td class="thumb-cell"><div class="ph"><svg><use href="#i-img"/></svg></div></td>
+                        <td><a class="row-title">Merino Base Layer</a></td>
+                        <td class="sku">MER-BL</td>
+                        <td class="stock-in">In stock</td>
+                        <td class="price"><del>$59</del> <ins>$44.00</ins></td>
+                        <td><span style="color:#dcdcde">☆</span></td>
+                        <td class="date-cell">2025/03/20</td>
+                      </tr>
+                      <tr class="alternate">
+                        <td class="check"><span class="wp-check"></span></td>
+                        <td class="thumb-cell"><div class="ph"><svg><use href="#i-img"/></svg></div></td>
+                        <td><a class="row-title">Trekking Poles (pair)</a></td>
+                        <td class="sku">TRK-PP</td>
+                        <td class="muted">—</td>
+                        <td class="price">$120.00</td>
+                        <td><span style="color:#dcdcde">☆</span></td>
+                        <td class="date-cell">2025/03/05</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="pin" style="left:720px; top:62px">3</div>
+              <div class="pin" style="left:360px; top:108px">1</div>
+              <div class="pin" style="left:520px; top:200px">2</div>
+            </div>
+          </div>
+          <aside class="callouts">
+            <div class="call"><div class="num">1</div><div><h4>"Duplicate" in Bulk Actions</h4><p>Added to the native <code>&lt;select&gt;</code>. Pick it, hit <b>Apply</b>, and every checked row is cloned in one pass.</p></div></div>
+            <div class="call"><div class="num">2</div><div><h4>Variable product, fully copied</h4><p>For "Trail Runner GTX" the clone carries all 6 variations, attributes (sizes 7–12, 2 colors) and the image gallery — that's the product-specific result.</p></div></div>
+            <div class="call"><div class="num">3</div><div><h4>Bulk confirmation</h4><p>One notice summarizes the batch: <em>"2 products duplicated"</em> with a link to the new drafts.</p></div></div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 7 · EDITOR ENTRY POINTS ===================== -->
+  <section data-label="Editor Entry Points" data-om-validate="no_overflowing_text,no_overlapping_text">
+    <div class="slide">
+      <div class="pad tight">
+        <div class="s-head">
+          <span class="kicker">Screen B · Block + Classic</span>
+          <h1 class="s-title">Editor entry points — "Copy to a new draft"</h1>
+        </div>
+        <div class="editor-grid">
+          <!-- BLOCK -->
+          <div class="ed-col">
+            <div class="ed-cap">Block editor <span class="tag">Gutenberg</span></div>
+            <div class="ed-sub">In the Status &amp; visibility panel, and mirrored in the editor's "⋯" options menu.</div>
+            <div class="frame p0" style="position:relative">
+              <div class="wp">
+                <div class="gb-header">
+                  <span class="gb-tool"><svg><use href="#i-undo"/></svg></span>
+                  <span class="gb-tool"><svg><use href="#i-redo"/></svg></span>
+                  <span class="gb-tool"><svg><use href="#i-list"/></svg></span>
+                  <span class="grow"></span>
+                  <span class="gb-btn-save">Save draft</span>
+                  <span class="gb-publish">Publish</span>
+                  <span class="gb-dots active"><svg><use href="#i-dots"/></svg></span>
+                </div>
+                <div style="display:flex">
+                  <div class="gb-canvas" style="flex:1">
+                    <div class="gb-doc">
+                      <div class="t">Trail Runner GTX — Review</div>
+                      <div class="p">A waterproof trail shoe built for technical descents and wet granite. Aggressive lugs, a rock plate, and a gusseted tongue keep grit out on long days.</div>
+                    </div>
+                  </div>
+                  <div class="gb-sidebar">
+                    <div class="gb-tabrow"><div class="gb-tab active">Post</div><div class="gb-tab">Block</div></div>
+                    <div class="gb-panel">
+                      <h3>Status &amp; visibility</h3>
+                      <div class="gb-row"><span class="lab"><svg><use href="#i-eye"/></svg> Visibility</span><span class="val">Public</span></div>
+                      <div class="gb-row"><span class="lab"><svg><use href="#i-calendar"/></svg> Publish</span><span class="val">Immediately</span></div>
+                      <div class="gb-action" style="background:#fdf4ea;border-radius:7px;padding:11px 10px;margin-top:4px"><svg><use href="#i-copy"/></svg> Copy to a new draft</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="markpill" style="right:46px; top:200px">Entry point</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:18px;margin-top:18px;position:relative">
+              <div class="gb-menu wp" style="position:static;box-shadow:0 8px 24px rgba(0,0,0,.16)">
+                <div class="grp">Tools</div>
+                <div class="it"><svg><use href="#i-copy"/></svg> Copy all blocks</div>
+                <div class="it hi"><svg><use href="#i-copy"/></svg> Copy to a new draft <span class="k">⌥⇧D</span></div>
+                <div class="div"></div>
+                <div class="it"><svg><use href="#i-list"/></svg> Code editor</div>
+              </div>
+              <div style="flex:1;font-size:21px;color:#50575e;line-height:1.45">Mirrored in the editor's <b style="color:#1d2327">⋯</b> options menu — same highlighted entry.</div>
+            </div>
+          </div>
+          <!-- CLASSIC -->
+          <div class="ed-col">
+            <div class="ed-cap">Classic editor <span class="tag" style="background:#646970">Metabox</span></div>
+            <div class="ed-sub">A row in the Publish metabox, above Move to Trash / Publish.</div>
+            <div class="frame" style="background:#f0f0f1;display:flex;justify-content:center;padding:34px 0;position:relative">
+              <div class="metabox wp">
+                <div class="mb-head">Publish</div>
+                <div class="mb-body">
+                  <div class="mb-row"><svg><use href="#i-post"/></svg> Status: <a>Draft</a></div>
+                  <div class="mb-row"><svg><use href="#i-eye"/></svg> Visibility: <a>Public</a></div>
+                  <div class="mb-row"><svg><use href="#i-calendar"/></svg> Publish <b style="font-weight:600;color:#1d2327">immediately</b></div>
+                  <div class="mb-row mb-dup-row" style="border-bottom:none;padding:9px 8px;margin-top:4px"><svg><use href="#i-copy"/></svg> <a style="font-weight:600">Copy to a new draft</a></div>
+                </div>
+                <div class="mb-footer"><a class="trash">Move to Trash</a><span class="button-primary button">Publish</span></div>
+              </div>
+              <div class="markpill" style="left:calc(50% + 24px); top:170px">Entry point</div>
+            </div>
+            <div class="ed-note"><span class="spinner"></span> <span><b style="color:#1d2327">Transition:</b> click → button shows <span class="dup-anim">Duplicating…</span> → redirect to the new draft in the same editor.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 8 · SETTINGS PAGE ===================== -->
+  <section data-label="Settings Page" data-om-validate="no_overflowing_text,no_overlapping_text">
+    <div class="slide">
+      <div class="pad tight">
+        <div class="s-head">
+          <span class="kicker">Screen C</span>
+          <h1 class="s-title">Settings page</h1>
+        </div>
+        <div class="s-body" style="grid-template-columns:1fr 430px">
+          <div class="mock-wrap">
+            <div class="frame p0" style="width:100%;position:relative">
+              <div class="wp">
+                <div class="wp-content" style="padding:16px 24px 22px">
+                  <div class="wp-heading"><h1>Chada Duplicate</h1></div>
+                  <div class="wp-form-card" style="padding:2px 20px 10px">
+                    <h2 class="section">Post types</h2>
+                    <table class="form-table"><tr><th style="padding:12px 10px 12px 0">Enable duplicate for</th><td style="padding:10px">
+                      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 30px">
+                        <div class="check-row"><span class="wp-check checked"></span> Posts</div>
+                        <div class="check-row"><span class="wp-check checked"></span> Pages</div>
+                        <div class="check-row"><span class="wp-check checked"></span> Products</div>
+                        <div class="check-row muted"><span class="wp-check"></span> Landing Pages (CPT)</div>
+                      </div>
+                    </td></tr></table>
+
+                    <h2 class="section">Copy behavior</h2>
+                    <table class="form-table">
+                      <tr><th style="padding:10px 10px 10px 0">Default status</th><td style="padding:8px 10px">
+                        <div class="radio-row"><span class="wp-radio on"></span> Draft</div>
+                        <div class="radio-row" style="margin-bottom:0"><span class="wp-radio"></span> Same as original</div></td></tr>
+                      <tr><th style="padding:10px 10px 10px 0">Title suffix</th><td style="padding:8px 10px">
+                        <input class="wp-input text" value=" (copy)" /></td></tr>
+                      <tr><th style="padding:10px 10px 10px 0">Also copy</th><td style="padding:8px 10px">
+                        <div style="display:flex;gap:30px">
+                          <div class="check-row"><span class="wp-check checked"></span> Author</div>
+                          <div class="check-row muted"><span class="wp-check"></span> Comments</div>
+                        </div></td></tr>
+                    </table>
+
+                    <h2 class="section">Excluded meta keys</h2>
+                    <table class="form-table"><tr><th style="padding:10px 10px 10px 0">Skip when cloning<div style="font-weight:400;color:#646970;font-size:12px;margin-top:4px">One key per line</div></th><td style="padding:8px 10px">
+                      <textarea class="wp-textarea" rows="3">_edit_lock
+_wp_old_slug
+_edit_last</textarea></td></tr></table>
+
+                    <h2 class="section">Permissions</h2>
+                    <table class="form-table"><tr><th style="padding:10px 10px 10px 0">Roles that may duplicate</th><td style="padding:8px 10px">
+                      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 30px">
+                        <div class="check-row"><span class="wp-check checked"></span> Administrator</div>
+                        <div class="check-row"><span class="wp-check checked"></span> Editor</div>
+                        <div class="check-row"><span class="wp-check checked"></span> Shop Manager</div>
+                        <div class="check-row muted"><span class="wp-check"></span> Author</div>
+                      </div></td></tr></table>
+                    <div class="submit-row"><span class="button-primary button button-large">Save Changes</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="pin" style="left:8px; top:104px">1</div>
+              <div class="pin" style="left:8px; top:232px">2</div>
+              <div class="pin" style="left:8px; top:436px">3</div>
+            </div>
+          </div>
+          <aside class="callouts">
+            <div class="call"><div class="num">1</div><div><h4>Native Settings&nbsp;API form-table</h4><p>Section headings, <code>&lt;th&gt;</code> labels, description text, one primary <b>Save&nbsp;Changes</b>. Nothing bespoke.</p></div></div>
+            <div class="call"><div class="num">2</div><div><h4>Sensible defaults</h4><p>Copy lands as <b>Draft</b>, titled <code> (copy)</code>, comments off. Each is a one-line, reversible choice.</p></div></div>
+            <div class="call"><div class="num">3</div><div><h4>Excluded meta + roles</h4><p>Pre-filled internal keys (<code>_edit_lock</code>…) protect against copying volatile meta; role checkboxes gate who sees the action.</p></div></div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 9 · CROSS-SELL PANEL ===================== -->
+  <section data-label="Cross-Sell Panel" data-om-validate="no_overflowing_text,no_overlapping_text">
+    <div class="slide">
+      <div class="pad tight">
+        <div class="s-head">
+          <span class="kicker chada">Screen D · Settings page only</span>
+          <h1 class="s-title">"More by Chada" — the tasteful cross-sell</h1>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 400px;gap:52px;margin-top:30px;height:calc(100% - 150px);align-items:center">
+          <div class="mock-wrap">
+            <div style="width:100%;position:relative">
+              <div style="font-size:20px;color:#646970;margin-bottom:14px;display:flex;align-items:center;gap:10px">
+                <span style="width:160px;height:8px;background:#dcdcde;border-radius:4px"></span>
+                <span>… end of the settings page</span>
+              </div>
+              <div class="chada-panel">
+                <div class="chada-head">
+                  <span class="chada-mark"><svg><use href="#i-megaphone"/></svg></span>
+                  <div class="ct"><h3>More by Chada</h3><p>Free tools that pair well with Duplicate — no upsell, no lock-in.</p></div>
+                  <span class="chada-dismiss"><svg><use href="#i-x"/></svg> Dismiss</span>
+                </div>
+                <div class="chada-cards">
+                  <div class="ccard"><div class="ci"><svg><use href="#i-cart"/></svg></div><h4>Cart Recovery</h4><p>Win back abandoned carts automatically.</p><a class="more">Learn more <svg><use href="#i-arrow"/></svg></a></div>
+                  <div class="ccard"><div class="ci"><svg><use href="#i-ai"/></svg></div><h4>AI Content</h4><p>Generate product descriptions in seconds.</p><a class="more">Learn more <svg><use href="#i-arrow"/></svg></a></div>
+                  <div class="ccard"><div class="ci"><svg><use href="#i-schema"/></svg></div><h4>Woo Schema</h4><p>Rich-result schema for better search listings.</p><a class="more">Learn more <svg><use href="#i-arrow"/></svg></a></div>
+                  <div class="ccard"><div class="ci"><svg><use href="#i-shield"/></svg></div><h4>WooFraudGuard</h4><p>Score and block fraudulent orders.</p><a class="more">Learn more <svg><use href="#i-arrow"/></svg></a></div>
+                  <div class="ccard"><div class="ci"><svg><use href="#i-activity"/></svg></div><h4>Activity Monitor</h4><p>See who changed what, and when.</p><a class="more">Learn more <svg><use href="#i-arrow"/></svg></a></div>
+                </div>
+              </div>
+              <div class="pin" style="left:6px; top:96px">1</div>
+              <div class="pin" style="right:158px; top:58px">2</div>
+            </div>
+          </div>
+          <aside class="callouts">
+            <div class="call"><div class="num">1</div><div><h4>Reads as a footer, not an ad</h4><p>The <b>only</b> place Chada teal appears. Calm cards: icon, one-line benefit, a quiet "Learn more". Lives at the bottom of the settings page — nowhere else.</p></div></div>
+            <div class="call"><div class="num">2</div><div><h4>One click to dismiss — for good</h4><p>No store-wide banner, no activation redirect, no dashboard nag. Dismiss hides it permanently (per user).</p></div></div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 10 · BEHAVIOR & HANDOFF ===================== -->
+  <section data-label="Behavior, States & Handoff Notes" data-om-validate="no_overflowing_text,no_overlapping_text">
+    <div class="slide dark">
+      <div class="pad">
+        <div class="s-head">
+          <span class="kicker" style="color:#7fb2dc">Engineering notes</span>
+          <h1 class="s-title" style="color:#f0f0f1">Behavior, states & handoff notes</h1>
+        </div>
+        <div class="behav">
+          <div class="bcol">
+            <h3>Interaction flows</h3>
+            <div class="flowstep"><div class="fn">A</div><div><h4>Single duplicate</h4><p><span class="seq">Hover row → Duplicate → success notice</span>; the copy appears as a draft, link jumps to its editor.</p></div></div>
+            <div class="flowstep"><div class="fn">B</div><div><h4>Bulk duplicate</h4><p><span class="seq">Check rows → Bulk Actions: Duplicate → Apply</span>; one summary notice for the batch.</p></div></div>
+            <div class="flowstep"><div class="fn">C</div><div><h4>From the editor</h4><p><span class="seq">Copy to a new draft → "Duplicating…" → redirect</span> to the new draft in place.</p></div></div>
+            <div class="flowstep"><div class="fn">D</div><div><h4>Dismiss cross-sell</h4><p><span class="seq">Dismiss → panel gone for good</span>, stored per user. Never reappears.</p></div></div>
+          </div>
+          <div class="bcol">
+            <h3>States covered & tradeoffs flagged</h3>
+            <div class="tradeoff"><svg><use href="#i-flag"/></svg><div><b>Native select, no custom dropdown.</b> Bulk "Duplicate" is a plain <code style="color:#9fc4e4;background:rgba(255,255,255,.08);padding:1px 6px;border-radius:4px;font-family:monospace">&lt;option&gt;</code> — no JS menu, so it inherits WP focus &amp; AA contrast for free.</div></div>
+            <div class="tradeoff"><svg><use href="#i-flag"/></svg><div><b>Status never by color alone.</b> "In stock", Draft and notices always pair an icon or text label with color.</div></div>
+            <div class="tradeoff"><svg><use href="#i-flag"/></svg><div><b>Variations are the slow path.</b> A 6-variation product clones more than a post — confirmation waits for the copy to finish, then notifies.</div></div>
+            <div class="tradeoff"><svg><use href="#i-flag"/></svg><div><b>Responsive down to mobile admin.</b> Row actions collapse with WP's native list-table behavior; nothing custom to maintain.</div></div>
+            <div class="tradeoff" style="border-top:none;padding-top:18px"><svg><use href="#i-copy"/></svg><div><b>Delivered:</b> A1–A4, B (block + classic), C, D — all at native wp-admin fidelity.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</deck-stage>
+
+<script src="deck-stage.js"></script>
+</body>
+</html>
