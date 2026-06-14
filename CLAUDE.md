@@ -1,13 +1,14 @@
 # Chada Duplicate — plugin notes for Claude
 
-**STATUS: Phases 0–4 built.** Merged: scaffold + **Updater** (free), the **core
-duplicator** (row/bulk on posts/pages/CPTs, Screen-A notices), and the **editor
-"Copy to a new draft"** button. **WooCommerce product cloning** —
-`ProductDuplicator` (WC-CRUD clone: type, attributes, variations, gallery,
-downloadable files, SKU, price), routed via `Duplicator::for_post()`, replacing
-WC's native product Duplicate — is on `feature/phase-4-products`, awaiting review.
-Phases 5–6 (settings, cross-sell) are not built yet — see `BUILD-PLAN.md`. This
-file remains the contract/spec.
+**STATUS: Phases 0–5 built.** Merged: scaffold + **Updater** (free), the **core
+duplicator** (row/bulk on posts/pages/CPTs, Screen-A notices), the **editor
+"Copy to a new draft"** button, and **WooCommerce product cloning**
+(`ProductDuplicator`). The **Settings page** (`Settings` + `Admin\SettingsPage`:
+post types, default status, title suffix, also-copy author/comments/price,
+excluded meta keys, allowed roles) + the Plugins-row "Settings" link is on
+`feature/phase-5-settings`, awaiting review. Settings drive the duplicator. Only
+Phase 6 (cross-sell panel + release) remains — see `BUILD-PLAN.md`. This file
+remains the contract/spec.
 
 > **Design handoff** lives in `design_handoff_chada_clone/` (titled "Chada
 > Clone" — an earlier working name; the shipping product is **Chada Duplicate**).
@@ -128,6 +129,13 @@ Row/bulk action or editor button → Duplicator::clone($post_id)
 - **Cross-sell tastefully:** one dismissible panel on the plugin's own settings
   screen + a small "More by Chada" link. NO store-wide nag notices, NO redirect
   on activate. Goodwill is the whole point of shipping this free — don't burn it.
+- **Settings API sanitize gotchas** (learned in Phase 5): WordPress calls the
+  `register_setting` sanitize callback **twice on the first save**, the second
+  time with your already-sanitized *array* as input — so any field that does
+  `(string) $input[...]` turns into the literal `"Array"`. Make sanitizers
+  idempotent (accept string OR array). Also, **`sanitize_text_field()` trims**:
+  don't use it on the title suffix or the meaningful leading space in " (copy)"
+  is lost — use `wp_kses( $v, array() )` (no trim) instead.
 - **Single vs bulk action value MUST differ.** A bulk submit lands on `edit.php`,
   which includes `wp-admin/admin.php`, which fires `admin_action_{action}`. If
   the single-row `admin_action_` name equals the bulk action value, the single

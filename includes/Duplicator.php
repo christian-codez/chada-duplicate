@@ -60,13 +60,13 @@ class Duplicator {
 		}
 
 		$new_post_args = array(
-			'post_title'            => $source_post->post_title . self::TITLE_SUFFIX,
+			'post_title'            => $source_post->post_title . $this->title_suffix(),
 			'post_content'          => $source_post->post_content,
 			'post_content_filtered' => $source_post->post_content_filtered,
 			'post_excerpt'          => $source_post->post_excerpt,
-			'post_status'           => self::DEFAULT_STATUS,
+			'post_status'           => $this->resolved_status( $source_post->post_status ),
 			'post_type'             => $source_post->post_type,
-			'post_author'           => $source_post->post_author,
+			'post_author'           => $this->resolved_author( $source_post->post_author ),
 			'post_parent'           => $source_post->post_parent,
 			'menu_order'            => $source_post->menu_order,
 			'post_password'         => $source_post->post_password,
@@ -93,6 +93,10 @@ class Duplicator {
 		$this->copy_taxonomies( $source_post, $new_post_id );
 		$this->copy_meta( $source_post->ID, $new_post_id );
 
+		if ( Settings::get( 'copy_comments' ) ) {
+			$this->copy_comments( $source_post->ID, $new_post_id );
+		}
+
 		/**
 		 * Fires after a post has been cloned (before any product-specific work).
 		 *
@@ -102,6 +106,82 @@ class Duplicator {
 		do_action( 'cdup_post_cloned', $new_post_id, $source_post );
 
 		return $new_post_id;
+	}
+
+	/**
+	 * Configured title suffix (e.g. " (copy)").
+	 *
+	 * @return string
+	 */
+	protected function title_suffix() {
+		$suffix = Settings::get( 'title_suffix' );
+		return is_string( $suffix ) ? $suffix : self::TITLE_SUFFIX;
+	}
+
+	/**
+	 * Status for the clone: the source status when "same as original" is set,
+	 * otherwise the default (draft).
+	 *
+	 * @param string $source_status Status of the source post.
+	 * @return string
+	 */
+	protected function resolved_status( $source_status ) {
+		return ( 'inherit' === Settings::get( 'default_status' ) ) ? $source_status : self::DEFAULT_STATUS;
+	}
+
+	/**
+	 * Author for the clone: the source author when "copy author" is on, otherwise
+	 * the current user.
+	 *
+	 * @param int $source_author Source post author ID.
+	 * @return int
+	 */
+	protected function resolved_author( $source_author ) {
+		return Settings::get( 'copy_author' ) ? (int) $source_author : get_current_user_id();
+	}
+
+	/**
+	 * Copy comments from the source post to the clone, preserving threading.
+	 *
+	 * @param int $source_post_id Source post ID.
+	 * @param int $new_post_id    Destination post ID.
+	 * @return void
+	 */
+	private function copy_comments( $source_post_id, $new_post_id ) {
+		$comments = get_comments(
+			array(
+				'post_id' => $source_post_id,
+				'orderby' => 'comment_ID',
+				'order'   => 'ASC',
+				'status'  => 'all',
+			)
+		);
+
+		$old_to_new = array();
+		foreach ( $comments as $comment ) {
+			$parent_id = (int) $comment->comment_parent;
+			$new_comment_id = wp_insert_comment(
+				wp_slash(
+					array(
+						'comment_post_ID'      => $new_post_id,
+						'comment_author'       => $comment->comment_author,
+						'comment_author_email' => $comment->comment_author_email,
+						'comment_author_url'   => $comment->comment_author_url,
+						'comment_author_IP'    => $comment->comment_author_IP,
+						'comment_content'      => $comment->comment_content,
+						'comment_type'         => $comment->comment_type,
+						'comment_parent'       => isset( $old_to_new[ $parent_id ] ) ? $old_to_new[ $parent_id ] : 0,
+						'comment_date'         => $comment->comment_date,
+						'comment_approved'     => $comment->comment_approved,
+						'comment_agent'        => $comment->comment_agent,
+						'user_id'              => $comment->user_id,
+					)
+				)
+			);
+			if ( $new_comment_id ) {
+				$old_to_new[ (int) $comment->comment_ID ] = $new_comment_id;
+			}
+		}
 	}
 
 	/**
@@ -154,36 +234,34 @@ class Duplicator {
 	 * @return string[]
 	 */
 	public static function excluded_meta_keys() {
-		$excluded_meta_keys = array(
-			'_edit_lock',
-			'_edit_last',
-			'_wp_old_slug',
-			'_wp_old_date',
-			'_wp_trash_meta_status',
-			'_wp_trash_meta_time',
-		);
+		$excluded_meta_keys = Settings::get( 'excluded_meta' );
+		$excluded_meta_keys = is_array( $excluded_meta_keys ) ? $excluded_meta_keys : array();
+
+		// Always protect trash-state keys regardless of the user's list.
+		$excluded_meta_keys = array_merge( $excluded_meta_keys, array( '_wp_trash_meta_status', '_wp_trash_meta_time' ) );
 
 		/**
 		 * Filter the meta keys skipped when cloning.
 		 *
 		 * @param string[] $excluded_meta_keys Keys to skip.
 		 */
-		return apply_filters( 'cdup_excluded_meta_keys', $excluded_meta_keys );
+		return apply_filters( 'cdup_excluded_meta_keys', array_values( array_unique( $excluded_meta_keys ) ) );
 	}
 
 	/**
-	 * Post types the duplicate action applies to: public, UI-visible types,
-	 * minus attachments and (for now) WooCommerce products.
+	 * Every post type that MAY be enabled on the settings page: public, UI-visible
+	 * types minus attachments and product variations. Returned as objects keyed
+	 * by slug so the settings UI can show labels.
 	 *
-	 * @return string[]
+	 * @return array<string,\WP_Post_Type>
 	 */
-	public static function supported_post_types() {
+	public static function candidate_post_types() {
 		$post_types = get_post_types(
 			array(
 				'public'  => true,
 				'show_ui' => true,
 			),
-			'names'
+			'objects'
 		);
 
 		unset(
@@ -192,12 +270,29 @@ class Duplicator {
 			$post_types['product_variation']
 		);
 
+		return $post_types;
+	}
+
+	/**
+	 * Post types the duplicate action actually applies to: the candidate types
+	 * narrowed to the ones enabled on the settings page.
+	 *
+	 * @return string[]
+	 */
+	public static function supported_post_types() {
+		$candidates    = array_keys( self::candidate_post_types() );
+		$enabled_types = Settings::get( 'post_types' );
+
+		$post_types = is_array( $enabled_types )
+			? array_values( array_intersect( $candidates, $enabled_types ) )
+			: $candidates;
+
 		/**
 		 * Filter the post types that get the Duplicate action.
 		 *
 		 * @param string[] $post_types Supported post-type slugs.
 		 */
-		return apply_filters( 'cdup_supported_post_types', array_values( $post_types ) );
+		return apply_filters( 'cdup_supported_post_types', $post_types );
 	}
 
 	/**
@@ -212,9 +307,8 @@ class Duplicator {
 
 	/**
 	 * Whether the current user may duplicate the given post: the post type must
-	 * be supported, and the user must be able to edit it (which maps to the
-	 * type's edit capability — `edit_posts` by default). Role narrowing arrives
-	 * in the Settings phase.
+	 * be supported, the user must be able to edit it (the type's edit capability,
+	 * `edit_posts` by default), AND hold one of the allowed roles.
 	 *
 	 * @param int $source_post_id Post to test.
 	 * @return bool
@@ -231,7 +325,8 @@ class Duplicator {
 			: 'edit_posts';
 
 		$user_can_duplicate = current_user_can( $create_capability )
-			&& current_user_can( 'edit_post', $source_post->ID );
+			&& current_user_can( 'edit_post', $source_post->ID )
+			&& self::current_user_has_allowed_role();
 
 		/**
 		 * Filter the per-post duplicate permission check.
@@ -240,5 +335,25 @@ class Duplicator {
 		 * @param int  $source_post_id     Post being tested.
 		 */
 		return (bool) apply_filters( 'cdup_current_user_can_duplicate', $user_can_duplicate, $source_post->ID );
+	}
+
+	/**
+	 * Whether the current user holds one of the allowed roles. Administrators
+	 * always pass; an empty allow-list imposes no role restriction.
+	 *
+	 * @return bool
+	 */
+	protected static function current_user_has_allowed_role() {
+		if ( current_user_can( 'manage_options' ) ) {
+			return true;
+		}
+
+		$allowed_roles = Settings::get( 'allowed_roles' );
+		if ( ! is_array( $allowed_roles ) || empty( $allowed_roles ) ) {
+			return true;
+		}
+
+		$user = wp_get_current_user();
+		return (bool) array_intersect( (array) $user->roles, $allowed_roles );
 	}
 }
