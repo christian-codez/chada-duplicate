@@ -11,6 +11,7 @@
 
 namespace Chada\Duplicate;
 
+use Chada\Duplicate\Admin\EditorButton;
 use Chada\Duplicate\Admin\ListActions;
 use Chada\Duplicate\Admin\Notices;
 use Chada\Duplicate\Licensing\Updater;
@@ -52,10 +53,11 @@ final class Plugin {
 		$update_client = new UpdateClient();
 		( new Updater( $update_client ) )->register();
 
-		// Admin-only: list-table Duplicate actions + result notices.
+		// Admin-only: list-table Duplicate actions + result notices + editor button.
 		if ( is_admin() ) {
 			( new ListActions() )->register();
 			( new Notices() )->register();
+			( new EditorButton() )->register();
 		}
 	}
 }

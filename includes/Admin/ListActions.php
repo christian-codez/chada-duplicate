@@ -77,6 +77,27 @@ class ListActions {
 	}
 
 	/**
+	 * Nonce-protected duplicate URL for the editor flow: clones the post and
+	 * redirects to the NEW draft's editor (rather than back to a list table).
+	 * Shared by the classic-editor link and the block-editor button.
+	 *
+	 * @param int $source_post_id Post being duplicated.
+	 * @return string
+	 */
+	public static function editor_duplicate_url( $source_post_id ) {
+		$action_url = add_query_arg(
+			array(
+				'action'        => self::ACTION,
+				'post'          => $source_post_id,
+				'cdup_redirect' => 'editor',
+			),
+			admin_url( 'admin.php' )
+		);
+
+		return wp_nonce_url( $action_url, self::nonce_action( $source_post_id ) );
+	}
+
+	/**
 	 * Add the "Duplicate" link to a row's action list.
 	 *
 	 * @param array    $row_actions Existing row actions.
@@ -134,25 +155,67 @@ class ListActions {
 			wp_die( esc_html__( 'You are not allowed to duplicate this item.', 'chada-duplicate' ) );
 		}
 
-		$source_post = get_post( $source_post_id );
+		// Where to land after cloning: 'editor' (from the editor button) opens the
+		// new draft; anything else returns to the list table with a notice.
+		$redirect_target = isset( $_REQUEST['cdup_redirect'] ) ? sanitize_key( wp_unslash( $_REQUEST['cdup_redirect'] ) ) : 'list';
+
+		$source_post  = get_post( $source_post_id );
 		$clone_result = ( new Duplicator() )->clone_post( $source_post_id );
 
-		$list_table_url = $this->list_table_url( $source_post );
-		if ( is_wp_error( $clone_result ) ) {
-			$redirect_url = add_query_arg( 'cdup_error', '1', $list_table_url );
+		if ( 'editor' === $redirect_target ) {
+			$redirect_url = $this->editor_redirect_url( $clone_result, $source_post_id );
 		} else {
-			$redirect_url = add_query_arg(
-				array(
-					'cdup_duplicated' => '1',
-					'cdup_new'        => $clone_result,
-					'cdup_from'       => $source_post_id,
-				),
-				$list_table_url
-			);
+			$redirect_url = $this->list_redirect_url( $clone_result, $source_post, $source_post_id );
 		}
 
 		wp_safe_redirect( $redirect_url );
 		exit;
+	}
+
+	/**
+	 * Redirect URL for the list-table flow: the source list with a notice.
+	 *
+	 * @param int|\WP_Error $clone_result   Result of the clone.
+	 * @param \WP_Post|null $source_post    The duplicated post.
+	 * @param int           $source_post_id The duplicated post ID.
+	 * @return string
+	 */
+	private function list_redirect_url( $clone_result, $source_post, $source_post_id ) {
+		$list_table_url = $this->list_table_url( $source_post );
+
+		if ( is_wp_error( $clone_result ) ) {
+			return add_query_arg( 'cdup_error', '1', $list_table_url );
+		}
+
+		return add_query_arg(
+			array(
+				'cdup_duplicated' => '1',
+				'cdup_new'        => $clone_result,
+				'cdup_from'       => $source_post_id,
+			),
+			$list_table_url
+		);
+	}
+
+	/**
+	 * Redirect URL for the editor flow: open the new draft, or fall back to the
+	 * source editor with an error flag.
+	 *
+	 * @param int|\WP_Error $clone_result   Result of the clone.
+	 * @param int           $source_post_id The duplicated post ID.
+	 * @return string
+	 */
+	private function editor_redirect_url( $clone_result, $source_post_id ) {
+		if ( ! is_wp_error( $clone_result ) ) {
+			$new_editor_url = get_edit_post_link( $clone_result, 'raw' );
+			if ( $new_editor_url ) {
+				return $new_editor_url;
+			}
+		}
+
+		$source_editor_url = get_edit_post_link( $source_post_id, 'raw' );
+		$source_editor_url = $source_editor_url ? $source_editor_url : admin_url();
+		return add_query_arg( 'cdup_error', '1', $source_editor_url );
 	}
 
 	/**

@@ -18,6 +18,13 @@ products (incl. variations). The lead-magnet that cross-sells the paid suite.
 ## Current status
 
 **Session log (newest first):**
+- 2026-06-14 (Phase 3) — Editor "Copy to a new draft" on
+  `feature/phase-3-editor-button`: block-editor `PluginPostStatusInfo` +
+  `PluginMoreMenuItem` (plain JS in `assets/js/editor.js`, no build) and classic
+  `post_submitbox_misc_actions` link, both reusing the single-duplicate handler
+  with `cdup_redirect=editor` → redirects to the new draft's editor.
+  **Verified live** (block editor: control + ⋯ menu + clone→redirect + featured
+  image copy). Classic-editor link not exercised (site uses block editor).
 - 2026-06-14 (Phase 2) — Core duplicator built on `feature/phase-2-duplicator`:
   `Duplicator::clone_post()` (core fields, taxonomies, all non-internal meta —
   featured image + page template ride along as meta), row action + bulk action
@@ -32,7 +39,7 @@ products (incl. variations). The lead-magnet that cross-sells the paid suite.
 - 2026-06-05 (scaffold) — Folder + `CLAUDE.md` (MVP spec) + this plan created.
   Slug registered server-side in CLM. No plugin code yet.
 
-**Next up:** Phase 3 (editor integration) — after the Phase 2 branch is merged.
+**Next up:** Phase 4 (WooCommerce product cloning) — after the Phase 3 branch is merged.
 
 ---
 
@@ -64,8 +71,10 @@ products (incl. variations). The lead-magnet that cross-sells the paid suite.
       core bulk nonce + per-post cap on the bulk action. No unauthenticated GET.
 
 ## Phase 3 — Editor integration
-- [ ] "Copy to a new draft" button in block + classic editors → clone → redirect
-      to the new draft's editor.
+- [x] "Copy to a new draft" button in block + classic editors → clone → redirect
+      to the new draft's editor. (Block: `PluginPostStatusInfo` +
+      `PluginMoreMenuItem` via `assets/js/editor.js`. Classic:
+      `post_submitbox_misc_actions`. Shared `cdup_redirect=editor` handler.)
 
 ## Phase 4 — WooCommerce product cloning (decision #2 — in MVP)
 - [ ] `ProductDuplicator` extends `Duplicator`: product type, attributes,
