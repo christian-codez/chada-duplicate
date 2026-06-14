@@ -1,7 +1,7 @@
-# Handoff: Chada Duplicate (wp-admin plugin)
+# Handoff: Chada Clone (wp-admin plugin)
 
 ## Overview
-**Chada Duplicate** is a free WordPress plugin that adds **one-click cloning** for posts, pages, custom post types, and **WooCommerce products (including variations)**. It surfaces as small, native additions inside existing wp-admin screens — a list-table **row action**, a **bulk action**, an **editor button**, one **settings page**, and a single tasteful **cross-sell panel**. A clone copies fields, taxonomies, meta, the featured image, and (for products) attributes/variations/gallery, landing as a ready-to-edit draft.
+**Chada Clone** is a free WordPress plugin that adds **one-click cloning** for posts, pages, custom post types, and **WooCommerce products (including variations)**. It surfaces as small, native additions inside existing wp-admin screens — a list-table **row action**, a **bulk action**, an **editor button**, one **settings page**, and a single tasteful **cross-sell panel**. A clone copies fields, taxonomies, meta, the featured image, and (for products) attributes/variations/gallery, landing as a ready-to-edit draft.
 
 The whole product philosophy: **invisible utility + one restrained cross-sell.** The Duplicate affordance must feel like it was always part of WordPress; introduce no custom palette anywhere except the cross-sell cards.
 
@@ -44,9 +44,9 @@ The All Posts / All Pages / All Products list table with the plugin's additions.
 - **Transition feedback:** On click, the control shows **"Duplicating…"** (brief spinner state), then **redirects to the new draft** in the same editor.
 
 ### Screen C — Settings page
-- **Name:** Chada Duplicate settings (`Settings →` or its own top-level item).
+- **Name:** Chada Clone settings (`Settings →` or its own top-level item).
 - **Purpose:** Configure which types get the action, copy behavior, excluded meta, and permissions.
-- **Layout:** Native Settings API. Page `<h1>` "Chada Duplicate" (23px/400). Sections as `<h2>` (18px/600) each followed by a `.form-table` (`<th>` labels 220px wide, 14px/600; `<td>` controls; `.description` helper text `#646970` 13px). One primary **Save Changes** button at the bottom.
+- **Layout:** Native Settings API. Page `<h1>` "Chada Clone" (23px/400). Sections as `<h2>` (18px/600) each followed by a `.form-table` (`<th>` labels 220px wide, 14px/600; `<td>` controls; `.description` helper text `#646970` 13px). One primary **Save Changes** button at the bottom.
 - **Sections & fields:**
   1. **Post types** — checkboxes: Posts ✓, Pages ✓, Products ✓, other public CPTs (e.g. "Landing Pages (CPT)" unchecked).
   2. **Copy behavior** — Default status radios (**Draft** ✓ / Same as original); Title suffix text input (default `" (copy)"`); Also copy: Author ✓, Comments ✗.
@@ -57,7 +57,7 @@ The All Posts / All Pages / All Products list table with the plugin's additions.
 - **Name:** Cross-sell footer panel — **settings page only**.
 - **Purpose:** Tasteful promotion of the paid Chada suite. Must read as a friendly footer, never an ad/nag.
 - **Layout:** A single dismissible card at the **bottom of the settings page only** (NOT a store-wide notice, NOT an activation redirect, NOT a dashboard nag). White card, 1px `#e4e6e9` border, **3px top border in Chada teal `#11776e`**, radius 10px, soft shadow.
-  - **Header:** 48×48 teal rounded-square mark (megaphone icon, white), title **"More by Chada"** (27px/700), subline "Free tools that pair well with Duplicate — no upsell, no lock-in." (20px `#50575e`). A **Dismiss** control (× + label) top-right, bordered `#e4e6e9`.
+  - **Header:** 48×48 teal rounded-square mark (megaphone icon, white), title **"More by Chada"** (27px/700), subline "Free tools that pair well with Chada Clone — no upsell, no lock-in." (20px `#50575e`). A **Dismiss** control (× + label) top-right, bordered `#e4e6e9`.
   - **Cards:** 5-up grid, each on a light teal tint `#f1f7f6` with border `#dcebe9`, radius 10px. Each card: 44×44 white icon chip (teal icon), title (22px/700), one-line benefit (19px `#50575e`), and a teal **"Learn more →"** link.
     - Cart Recovery — "Win back abandoned carts automatically."
     - AI Content — "Generate product descriptions in seconds."
@@ -119,7 +119,7 @@ All inherited from the wp-admin "Fresh" color scheme except the Chada accent.
 
 ## Files
 In this bundle:
-- `Chada Duplicate — Design Handoff.html` — the 10-slide mockup deck (open in a browser to view; arrow keys / thumbnail rail to navigate). Primary visual reference.
+- `Chada Clone - Design Handoff.html` — the 10-slide mockup deck (open in a browser to view; arrow keys / thumbnail rail to navigate). Primary visual reference.
 - `wp-admin.css` — precise spec of the native wp-admin component values used (and the literal spec for the Screen D panel). Reference for measurements/colors; not meant to ship.
 - `deck-stage.js` — only the slide-viewer shell for the HTML deck; **not part of the product.**
 
