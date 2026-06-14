@@ -18,6 +18,12 @@ products (incl. variations). The lead-magnet that cross-sells the paid suite.
 ## Current status
 
 **Session log (newest first):**
+- 2026-06-14 (Phase 2) — Core duplicator built on `feature/phase-2-duplicator`:
+  `Duplicator::clone_post()` (core fields, taxonomies, all non-internal meta —
+  featured image + page template ride along as meta), row action + bulk action
+  on posts/pages/public CPTs (products excluded until Phase 4), per-post nonce +
+  capability checks, and the Screen-A success/bulk/error admin notices. Awaiting
+  review/merge.
 - 2026-06-14 (Phase 0+1) — Built scaffold (`chada-duplicate.php` main file,
   autoloader, boot, `Installer`, `uninstall.php`) + ported the **Updater**
   (`Licensing/UpdateClient` + `Licensing/Updater`, free — no `LicenseClient`).
@@ -26,7 +32,7 @@ products (incl. variations). The lead-magnet that cross-sells the paid suite.
 - 2026-06-05 (scaffold) — Folder + `CLAUDE.md` (MVP spec) + this plan created.
   Slug registered server-side in CLM. No plugin code yet.
 
-**Next up:** Phase 2 (core duplicator) — after the Phase 0/1 branch is merged.
+**Next up:** Phase 3 (editor integration) — after the Phase 2 branch is merged.
 
 ---
 
@@ -46,14 +52,16 @@ products (incl. variations). The lead-magnet that cross-sells the paid suite.
       reachable; verify after merge / when the platform is up.
 
 ## Phase 2 — Core duplicator (posts / pages / CPTs)
-- [ ] `Duplicator::clone($post_id)`: title (+ " (copy)" suffix), content, excerpt,
-      slug, status (default draft), author, parent, menu order, page template,
-      **all taxonomies**, **all post meta** (skip internal keys — `_edit_lock`,
-      `_edit_last`, `_wp_old_slug`, `_wp_old_date`, …; filterable exclusion list),
-      featured image.
-- [ ] Row action + bulk action on Posts / Pages / public CPTs.
-- [ ] **Security:** per-post nonce + capability check (`edit_posts`) on every
-      clone; never clone from an unauthenticated GET.
+- [x] `Duplicator::clone_post($post_id)`: title (+ " (copy)" suffix), content,
+      excerpt, status (default draft), author, parent, menu order, slug (fresh,
+      unique), **all taxonomies**, **all post meta** (skip internal keys —
+      `_edit_lock`, `_edit_last`, `_wp_old_slug`, `_wp_old_date`, …; filterable
+      via `cdup_excluded_meta_keys`). Featured image + page template ride along
+      as meta.
+- [x] Row action + bulk action on Posts / Pages / public CPTs (products excluded
+      until ProductDuplicator, Phase 4).
+- [x] **Security:** per-post nonce + capability check on the single action;
+      core bulk nonce + per-post cap on the bulk action. No unauthenticated GET.
 
 ## Phase 3 — Editor integration
 - [ ] "Copy to a new draft" button in block + classic editors → clone → redirect

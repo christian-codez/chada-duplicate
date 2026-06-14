@@ -1,10 +1,11 @@
 # Chada Duplicate — plugin notes for Claude
 
-**STATUS: Phase 0/1 in progress.** Scaffold (main file, autoloader, boot,
-Installer) + the marketplace **Updater** (ported, free — no license gating) are
-built on branch `feature/phase-0-scaffold`. Phases 2–6 (duplicator engine,
-list-table/editor entry points, settings, cross-sell) are not built yet — see
-`BUILD-PLAN.md`. This file remains the contract/spec.
+**STATUS: Phases 0–2 built.** Scaffold + marketplace **Updater** (free, no
+gating) are merged. The **core duplicator** — `Duplicator::clone_post()`, the
+row + bulk Duplicate actions on posts/pages/public CPTs (products excluded until
+Phase 4), and the Screen-A admin notices — is on `feature/phase-2-duplicator`,
+awaiting review. Phases 3–6 (editor button, products, settings, cross-sell) are
+not built yet — see `BUILD-PLAN.md`. This file remains the contract/spec.
 
 > **Design handoff** lives in `design_handoff_chada_clone/` (titled "Chada
 > Clone" — an earlier working name; the shipping product is **Chada Duplicate**).
