@@ -126,4 +126,11 @@ Row/bulk action or editor button → Duplicator::clone($post_id)
 - **Cross-sell tastefully:** one dismissible panel on the plugin's own settings
   screen + a small "More by Chada" link. NO store-wide nag notices, NO redirect
   on activate. Goodwill is the whole point of shipping this free — don't burn it.
+- **Single vs bulk action value MUST differ.** A bulk submit lands on `edit.php`,
+  which includes `wp-admin/admin.php`, which fires `admin_action_{action}`. If
+  the single-row `admin_action_` name equals the bulk action value, the single
+  handler hijacks the bulk POST — it misreads `post[]` (array) as a post ID and
+  fails the per-post nonce, showing "The link you followed has expired." Keep
+  them distinct (here: single `cdup_duplicate`, bulk `cdup_bulk_duplicate`).
+  Phase 4's product row/bulk actions must follow the same rule.
 ```

@@ -24,8 +24,19 @@ defined( 'ABSPATH' ) || exit;
 
 class ListActions {
 
-	/** Shared action slug for both the row link and the bulk option value. */
+	/**
+	 * Single-row action slug (admin.php?action=…). This is also the name of the
+	 * `admin_action_{ACTION}` hook fired for every admin page that includes
+	 * wp-admin/admin.php.
+	 */
 	const ACTION = 'cdup_duplicate';
+
+	/**
+	 * Bulk-action value. MUST differ from {@see ListActions::ACTION}: a bulk
+	 * submit lands on edit.php (which includes admin.php), so a shared value
+	 * would fire the single `admin_action_` handler and hijack the bulk request.
+	 */
+	const BULK_ACTION = 'cdup_bulk_duplicate';
 
 	/**
 	 * Register hooks.
@@ -95,7 +106,7 @@ class ListActions {
 	 * @return array
 	 */
 	public function add_bulk_action( $bulk_actions ) {
-		$bulk_actions[ self::ACTION ] = __( 'Duplicate', 'chada-duplicate' );
+		$bulk_actions[ self::BULK_ACTION ] = __( 'Duplicate', 'chada-duplicate' );
 		return $bulk_actions;
 	}
 
@@ -105,6 +116,13 @@ class ListActions {
 	 * @return void
 	 */
 	public function handle_single_duplicate() {
+		// Defense in depth: a bulk submit sends `post[]` as an array. The bulk
+		// value (BULK_ACTION) differs from this hook's action so we should never
+		// be reached that way, but bail rather than misread an array as an ID.
+		if ( isset( $_REQUEST['post'] ) && is_array( $_REQUEST['post'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return;
+		}
+
 		$source_post_id = isset( $_REQUEST['post'] ) ? absint( $_REQUEST['post'] ) : 0;
 		if ( ! $source_post_id ) {
 			wp_die( esc_html__( 'No item was specified to duplicate.', 'chada-duplicate' ) );
@@ -146,7 +164,7 @@ class ListActions {
 	 * @return string
 	 */
 	public function handle_bulk_duplicate( $redirect_url, $doaction, $post_ids ) {
-		if ( self::ACTION !== $doaction ) {
+		if ( self::BULK_ACTION !== $doaction ) {
 			return $redirect_url;
 		}
 
