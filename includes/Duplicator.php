@@ -30,6 +30,21 @@ class Duplicator {
 	const DEFAULT_STATUS = 'draft';
 
 	/**
+	 * Resolve the right duplicator for a post: ProductDuplicator for WooCommerce
+	 * products, the base Duplicator for everything else.
+	 *
+	 * @param int $post_id Post to duplicate.
+	 * @return Duplicator
+	 */
+	public static function for_post( $post_id ) {
+		$post = get_post( $post_id );
+		if ( $post instanceof \WP_Post && 'product' === $post->post_type && function_exists( 'wc_get_product' ) ) {
+			return new ProductDuplicator();
+		}
+		return new self();
+	}
+
+	/**
 	 * Clone a post and return the new post ID.
 	 *
 	 * @param int $source_post_id Post being duplicated.
@@ -173,8 +188,7 @@ class Duplicator {
 
 		unset(
 			$post_types['attachment'],
-			// Products need ProductDuplicator (Phase 4); excluded until then.
-			$post_types['product'],
+			// Variations are child posts of a product, never duplicated standalone.
 			$post_types['product_variation']
 		);
 

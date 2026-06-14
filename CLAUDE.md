@@ -1,13 +1,13 @@
 # Chada Duplicate — plugin notes for Claude
 
-**STATUS: Phases 0–3 built.** Merged: scaffold + marketplace **Updater** (free)
-and the **core duplicator** (row + bulk Duplicate on posts/pages/public CPTs,
-Screen-A notices). The **editor "Copy to a new draft"** button (block-editor
-`PluginPostStatusInfo` + `PluginMoreMenuItem` via `assets/js/editor.js`, classic
-`post_submitbox_misc_actions`; redirects to the new draft) is on
-`feature/phase-3-editor-button`, awaiting review. Phases 4–6 (products, settings,
-cross-sell) are not built yet — see `BUILD-PLAN.md`. This file remains the
-contract/spec.
+**STATUS: Phases 0–4 built.** Merged: scaffold + **Updater** (free), the **core
+duplicator** (row/bulk on posts/pages/CPTs, Screen-A notices), and the **editor
+"Copy to a new draft"** button. **WooCommerce product cloning** —
+`ProductDuplicator` (WC-CRUD clone: type, attributes, variations, gallery,
+downloadable files, SKU, price), routed via `Duplicator::for_post()`, replacing
+WC's native product Duplicate — is on `feature/phase-4-products`, awaiting review.
+Phases 5–6 (settings, cross-sell) are not built yet — see `BUILD-PLAN.md`. This
+file remains the contract/spec.
 
 > **Design handoff** lives in `design_handoff_chada_clone/` (titled "Chada
 > Clone" — an earlier working name; the shipping product is **Chada Duplicate**).

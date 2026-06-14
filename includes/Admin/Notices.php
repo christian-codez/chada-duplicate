@@ -94,11 +94,23 @@ class Notices {
 			return;
 		}
 
-		$message = sprintf(
-			/* translators: %s: number of duplicated items. */
-			esc_html( _n( '%s item duplicated', '%s items duplicated', $duplicated_count, 'chada-duplicate' ) ),
-			number_format_i18n( $duplicated_count )
-		);
+		$is_product_screen = ( 'product' === $this->current_screen_post_type() );
+
+		if ( $is_product_screen ) {
+			$message = sprintf(
+				/* translators: %s: number of duplicated products. */
+				esc_html( _n( '%s product duplicated', '%s products duplicated', $duplicated_count, 'chada-duplicate' ) ),
+				number_format_i18n( $duplicated_count )
+			);
+			// Reassure the merchant that the deep product data came along.
+			$message .= ' ' . esc_html__( '— including variations &amp; gallery images.', 'chada-duplicate' );
+		} else {
+			$message = sprintf(
+				/* translators: %s: number of duplicated items. */
+				esc_html( _n( '%s item duplicated', '%s items duplicated', $duplicated_count, 'chada-duplicate' ) ),
+				number_format_i18n( $duplicated_count )
+			);
+		}
 
 		$drafts_url = add_query_arg(
 			array( 'post_status' => 'draft' ),
@@ -132,9 +144,16 @@ class Notices {
 	 * @return string
 	 */
 	private function current_list_table_url() {
-		$screen    = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-		$post_type = ( $screen && $screen->post_type ) ? $screen->post_type : 'post';
+		return add_query_arg( 'post_type', $this->current_screen_post_type(), admin_url( 'edit.php' ) );
+	}
 
-		return add_query_arg( 'post_type', $post_type, admin_url( 'edit.php' ) );
+	/**
+	 * Post type of the current admin screen ('post' as a safe fallback).
+	 *
+	 * @return string
+	 */
+	private function current_screen_post_type() {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		return ( $screen && $screen->post_type ) ? $screen->post_type : 'post';
 	}
 }

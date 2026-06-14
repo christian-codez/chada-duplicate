@@ -55,9 +55,11 @@ class ListActions {
 	 */
 	public function register_screen_hooks() {
 		// Row actions: `post_row_actions` (non-hierarchical) + `page_row_actions`
-		// (hierarchical) together cover every public post type.
-		add_filter( 'post_row_actions', array( $this, 'add_row_action' ), 10, 2 );
-		add_filter( 'page_row_actions', array( $this, 'add_row_action' ), 10, 2 );
+		// (hierarchical) together cover every public post type. Priority 100 so we
+		// run after WooCommerce (which adds its own product Duplicate at 10) and
+		// can replace it with ours.
+		add_filter( 'post_row_actions', array( $this, 'add_row_action' ), 100, 2 );
+		add_filter( 'page_row_actions', array( $this, 'add_row_action' ), 100, 2 );
 
 		foreach ( Duplicator::supported_post_types() as $post_type ) {
 			$screen_id = 'edit-' . $post_type;
@@ -107,6 +109,12 @@ class ListActions {
 	public function add_row_action( $row_actions, $post ) {
 		if ( ! Duplicator::current_user_can_duplicate( $post->ID ) ) {
 			return $row_actions;
+		}
+
+		// Replace WooCommerce's native product Duplicate with ours so there is a
+		// single, consistent Duplicate action (and our result notices) everywhere.
+		if ( 'product' === $post->post_type ) {
+			unset( $row_actions['duplicate'] );
 		}
 
 		$row_actions[ self::ACTION ] = sprintf(
@@ -160,7 +168,7 @@ class ListActions {
 		$redirect_target = isset( $_REQUEST['cdup_redirect'] ) ? sanitize_key( wp_unslash( $_REQUEST['cdup_redirect'] ) ) : 'list';
 
 		$source_post  = get_post( $source_post_id );
-		$clone_result = ( new Duplicator() )->clone_post( $source_post_id );
+		$clone_result = Duplicator::for_post( $source_post_id )->clone_post( $source_post_id );
 
 		if ( 'editor' === $redirect_target ) {
 			$redirect_url = $this->editor_redirect_url( $clone_result, $source_post_id );
@@ -231,7 +239,6 @@ class ListActions {
 			return $redirect_url;
 		}
 
-		$duplicator       = new Duplicator();
 		$duplicated_count = 0;
 
 		foreach ( (array) $post_ids as $post_id ) {
@@ -239,7 +246,7 @@ class ListActions {
 			if ( ! $post_id || ! Duplicator::current_user_can_duplicate( $post_id ) ) {
 				continue;
 			}
-			if ( ! is_wp_error( $duplicator->clone_post( $post_id ) ) ) {
+			if ( ! is_wp_error( Duplicator::for_post( $post_id )->clone_post( $post_id ) ) ) {
 				$duplicated_count++;
 			}
 		}
