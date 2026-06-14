@@ -45,8 +45,8 @@ class ProductDuplicator extends Duplicator {
 		// inserts fresh meta instead of overwriting the source's.
 		$duplicate = clone $product;
 		$duplicate->set_id( 0 );
-		$duplicate->set_name( $product->get_name() . self::TITLE_SUFFIX );
-		$duplicate->set_status( self::DEFAULT_STATUS );
+		$duplicate->set_name( $product->get_name() . $this->title_suffix() );
+		$duplicate->set_status( $this->resolved_status( $product->get_status() ) );
 		$duplicate->set_slug( '' );
 		$duplicate->set_date_created( null );
 		$duplicate->set_total_sales( 0 );
@@ -61,6 +61,16 @@ class ProductDuplicator extends Duplicator {
 		$new_product_id = $duplicate->save();
 		if ( ! $new_product_id ) {
 			return new \WP_Error( 'cdup_product_save_failed', __( 'The product could not be duplicated.', 'chada-duplicate' ) );
+		}
+
+		// WC keeps the source author on clone; honour the "copy author" setting.
+		if ( ! Settings::get( 'copy_author' ) ) {
+			wp_update_post(
+				array(
+					'ID'          => $new_product_id,
+					'post_author' => get_current_user_id(),
+				)
+			);
 		}
 
 		$this->clone_variations( $product, $new_product_id, $copy_price );
@@ -146,8 +156,8 @@ class ProductDuplicator extends Duplicator {
 		/**
 		 * Filter whether cloned products keep their prices.
 		 *
-		 * @param bool $copy_price Default true.
+		 * @param bool $copy_price From the "Copy product price" setting.
 		 */
-		return (bool) apply_filters( 'cdup_product_copy_price', true );
+		return (bool) apply_filters( 'cdup_product_copy_price', (bool) Settings::get( 'copy_price' ) );
 	}
 }

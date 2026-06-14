@@ -18,6 +18,12 @@ products (incl. variations). The lead-magnet that cross-sells the paid suite.
 ## Current status
 
 **Session log (newest first):**
+- 2026-06-14 (Phase 5) — Settings page on `feature/phase-5-settings`: `Settings`
+  repository + `Admin\SettingsPage` (post types, default status, title suffix,
+  also-copy author/comments/price, excluded meta keys, allowed roles) wired into
+  the duplicator; Plugins-row "Settings" link added. **Verified live** (renders
+  per Screen C, saves/persists, suffix drives the clone). Fixed two sanitize
+  bugs found live: double-sanitize `"Array"` corruption + suffix space trimming.
 - 2026-06-14 (Phase 4) — WooCommerce product cloning on `feature/phase-4-products`:
   `ProductDuplicator` (extends `Duplicator`) clones via WC CRUD — product type,
   attributes, variations, gallery, downloadable files, SKU (unique-suffixed),
@@ -47,7 +53,7 @@ products (incl. variations). The lead-magnet that cross-sells the paid suite.
 - 2026-06-05 (scaffold) — Folder + `CLAUDE.md` (MVP spec) + this plan created.
   Slug registered server-side in CLM. No plugin code yet.
 
-**Next up:** Phase 5 (Settings) — after the Phase 4 branch is merged.
+**Next up:** Phase 6 (cross-sell panel + release) — after the Phase 5 branch is merged.
 
 ---
 
@@ -94,9 +100,11 @@ products (incl. variations). The lead-magnet that cross-sells the paid suite.
       the product post type). Replaces WooCommerce's native product Duplicate.
 
 ## Phase 5 — Settings
-- [ ] Enabled post types, default status of the copy, title suffix, meta-key
-      exclusion list, and **which roles** may duplicate.
-- [ ] Don't copy revisions or comments by default.
+- [x] Enabled post types, default status of the copy, title suffix, meta-key
+      exclusion list, **which roles** may duplicate, plus also-copy
+      author/comments and product price. One `cdup_settings` option via
+      `Settings` + `Admin\SettingsPage`; Plugins-row "Settings" link added.
+- [x] Don't copy revisions or comments by default (comments opt-in via setting).
 
 ## Phase 6 — Cross-sell (decision #3 — tasteful only) + release
 - [ ] One dismissible "More by Chada" panel on the plugin's own settings screen +

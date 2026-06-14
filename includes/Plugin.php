@@ -14,6 +14,7 @@ namespace Chada\Duplicate;
 use Chada\Duplicate\Admin\EditorButton;
 use Chada\Duplicate\Admin\ListActions;
 use Chada\Duplicate\Admin\Notices;
+use Chada\Duplicate\Admin\SettingsPage;
 use Chada\Duplicate\Licensing\Updater;
 use Chada\Duplicate\Licensing\UpdateClient;
 
@@ -58,6 +59,7 @@ final class Plugin {
 			( new ListActions() )->register();
 			( new Notices() )->register();
 			( new EditorButton() )->register();
+			( new SettingsPage() )->register();
 		}
 	}
 }
