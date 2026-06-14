@@ -11,6 +11,8 @@
 
 namespace Chada\Duplicate;
 
+use Chada\Duplicate\Admin\ListActions;
+use Chada\Duplicate\Admin\Notices;
 use Chada\Duplicate\Licensing\Updater;
 use Chada\Duplicate\Licensing\UpdateClient;
 
@@ -49,5 +51,11 @@ final class Plugin {
 		// Auto-updates from the CHADA marketplace (free product — no license gating).
 		$update_client = new UpdateClient();
 		( new Updater( $update_client ) )->register();
+
+		// Admin-only: list-table Duplicate actions + result notices.
+		if ( is_admin() ) {
+			( new ListActions() )->register();
+			( new Notices() )->register();
+		}
 	}
 }
