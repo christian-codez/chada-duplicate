@@ -96,6 +96,12 @@ class EditorButton {
 		if ( ! $post instanceof \WP_Post || 'auto-draft' === $post->post_status ) {
 			return false;
 		}
+		// Products keep WooCommerce's own edit-screen "Copy to a new draft"
+		// button; we own the Products list row/bulk action instead. (The list
+		// action still routes products through ProductDuplicator.)
+		if ( 'product' === $post->post_type ) {
+			return false;
+		}
 		return Duplicator::current_user_can_duplicate( $post->ID );
 	}
 }

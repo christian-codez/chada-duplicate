@@ -18,6 +18,14 @@ products (incl. variations). The lead-magnet that cross-sells the paid suite.
 ## Current status
 
 **Session log (newest first):**
+- 2026-06-14 (Phase 4) — WooCommerce product cloning on `feature/phase-4-products`:
+  `ProductDuplicator` (extends `Duplicator`) clones via WC CRUD — product type,
+  attributes, variations, gallery, downloadable files, SKU (unique-suffixed),
+  price (filterable copy/skip). `Duplicator::for_post()` routes products there;
+  our row/bulk action replaces WooCommerce's native product Duplicate; product-
+  aware bulk notice. **Verified live** on a variable-subscription product
+  (3 variations + prices recreated, featured image/attr/category copied) + the
+  product bulk notice. EditorButton skips products (WC owns the edit screen).
 - 2026-06-14 (Phase 3) — Editor "Copy to a new draft" on
   `feature/phase-3-editor-button`: block-editor `PluginPostStatusInfo` +
   `PluginMoreMenuItem` (plain JS in `assets/js/editor.js`, no build) and classic
@@ -39,7 +47,7 @@ products (incl. variations). The lead-magnet that cross-sells the paid suite.
 - 2026-06-05 (scaffold) — Folder + `CLAUDE.md` (MVP spec) + this plan created.
   Slug registered server-side in CLM. No plugin code yet.
 
-**Next up:** Phase 4 (WooCommerce product cloning) — after the Phase 3 branch is merged.
+**Next up:** Phase 5 (Settings) — after the Phase 4 branch is merged.
 
 ---
 
@@ -77,11 +85,13 @@ products (incl. variations). The lead-magnet that cross-sells the paid suite.
       `post_submitbox_misc_actions`. Shared `cdup_redirect=editor` handler.)
 
 ## Phase 4 — WooCommerce product cloning (decision #2 — in MVP)
-- [ ] `ProductDuplicator` extends `Duplicator`: product type, attributes,
+- [x] `ProductDuplicator` extends `Duplicator`: product type, attributes,
       **variations (child posts)** re-created + re-linked, gallery, downloadable
-      files, SKU handling (blank or suffix to avoid duplicate-SKU save errors),
-      price (configurable copy/skip).
-- [ ] Row/bulk action on the Products list; `edit_products` cap.
+      files, SKU handling (unique-suffixed via `wc_product_generate_unique_sku`),
+      price (configurable copy/skip via `cdup_product_copy_price`). Clones via WC
+      CRUD so lookup tables stay in sync.
+- [x] Row/bulk action on the Products list; `edit_products` cap (inherited from
+      the product post type). Replaces WooCommerce's native product Duplicate.
 
 ## Phase 5 — Settings
 - [ ] Enabled post types, default status of the copy, title suffix, meta-key
