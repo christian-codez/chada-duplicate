@@ -114,6 +114,13 @@ class SettingsPage {
 				submit_button();
 				?>
 			</form>
+			<?php
+			/**
+			 * Fires after the settings form on the Chada Duplicate settings page.
+			 * Used by the "More by Chada" cross-sell panel.
+			 */
+			do_action( 'cdup_after_settings_form' );
+			?>
 		</div>
 		<?php
 	}

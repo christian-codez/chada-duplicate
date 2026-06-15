@@ -1,0 +1,152 @@
+/**
+ * Chada Duplicate — settings page styles.
+ *
+ * Scoped to the one custom-styled surface in the plugin: the "More by Chada"
+ * cross-sell panel (design handoff, Screen D). Everything else on the settings
+ * page inherits native wp-admin styling. Chada accent: #11776e.
+ */
+
+.cdup-crosssell {
+	max-width: 1200px;
+	margin: 24px 0 12px;
+	background: #fff;
+	border: 1px solid #e4e6e9;
+	border-top: 3px solid #11776e;
+	border-radius: 10px;
+	box-shadow: 0 1px 3px rgba( 0, 0, 0, 0.06 );
+	padding: 20px 24px 24px;
+}
+
+.cdup-crosssell__head {
+	display: flex;
+	align-items: flex-start;
+	gap: 14px;
+	margin-bottom: 18px;
+}
+
+.cdup-crosssell__mark {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 48px;
+	height: 48px;
+	border-radius: 10px;
+	background: #11776e;
+	color: #fff;
+}
+
+.cdup-crosssell__mark .dashicons {
+	width: 26px;
+	height: 26px;
+	font-size: 26px;
+}
+
+.cdup-crosssell__intro {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.cdup-crosssell__title {
+	margin: 2px 0 2px;
+	padding: 0;
+	font-size: 22px;
+	font-weight: 700;
+	line-height: 1.2;
+	color: #1d2327;
+}
+
+.cdup-crosssell__subtitle {
+	margin: 0;
+	font-size: 14px;
+	color: #50575e;
+}
+
+.cdup-crosssell__dismiss {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 4px 10px;
+	border: 1px solid #e4e6e9;
+	border-radius: 6px;
+	color: #646970;
+	font-size: 13px;
+	line-height: 1.6;
+	text-decoration: none;
+}
+
+.cdup-crosssell__dismiss:hover,
+.cdup-crosssell__dismiss:focus {
+	border-color: #c3c4c7;
+	color: #1d2327;
+}
+
+.cdup-crosssell__dismiss .dashicons {
+	width: 16px;
+	height: 16px;
+	font-size: 16px;
+}
+
+.cdup-crosssell__grid {
+	display: grid;
+	grid-template-columns: repeat( auto-fit, minmax( 190px, 1fr ) );
+	gap: 14px;
+}
+
+.cdup-crosssell__card {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	background: #f1f7f6;
+	border: 1px solid #dcebe9;
+	border-radius: 10px;
+	padding: 16px;
+}
+
+.cdup-crosssell__chip {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	border-radius: 10px;
+	background: #fff;
+	color: #11776e;
+	margin-bottom: 12px;
+}
+
+.cdup-crosssell__chip .dashicons {
+	width: 22px;
+	height: 22px;
+	font-size: 22px;
+}
+
+.cdup-crosssell__card-title {
+	margin: 0 0 4px;
+	padding: 0;
+	font-size: 16px;
+	font-weight: 700;
+	color: #1d2327;
+}
+
+.cdup-crosssell__benefit {
+	margin: 0 0 12px;
+	font-size: 13px;
+	line-height: 1.5;
+	color: #50575e;
+}
+
+.cdup-crosssell__link {
+	margin-top: auto;
+	color: #11776e;
+	font-weight: 600;
+	font-size: 13px;
+	text-decoration: none;
+}
+
+.cdup-crosssell__link:hover,
+.cdup-crosssell__link:focus {
+	color: #0d5d56;
+	text-decoration: underline;
+}

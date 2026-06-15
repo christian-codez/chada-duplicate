@@ -11,6 +11,7 @@
 
 namespace Chada\Duplicate;
 
+use Chada\Duplicate\Admin\CrossSell;
 use Chada\Duplicate\Admin\EditorButton;
 use Chada\Duplicate\Admin\ListActions;
 use Chada\Duplicate\Admin\Notices;
@@ -60,6 +61,7 @@ final class Plugin {
 			( new Notices() )->register();
 			( new EditorButton() )->register();
 			( new SettingsPage() )->register();
+			( new CrossSell() )->register();
 		}
 	}
 }
