@@ -18,6 +18,13 @@ products (incl. variations). The lead-magnet that cross-sells the paid suite.
 ## Current status
 
 **Session log (newest first):**
+- 2026-06-14 (Phase 6) — Cross-sell + release on `feature/phase-6-crosssell`:
+  `Admin\CrossSell` renders the "More by Chada" panel (Screen D) after the
+  settings form + a footer link, dismissible per-user (`cdup_crosssell_dismissed`
+  meta); `assets/css/settings.css` is the one custom-styled surface;
+  `tools/build-release.sh` builds the ZIP + manifest into the CLM releases dir.
+  **Verified live** (panel renders per Screen D, Dismiss hides it + persists,
+  release ZIP excludes dev files). MVP feature-complete.
 - 2026-06-14 (Phase 5) — Settings page on `feature/phase-5-settings`: `Settings`
   repository + `Admin\SettingsPage` (post types, default status, title suffix,
   also-copy author/comments/price, excluded meta keys, allowed roles) wired into
@@ -53,7 +60,9 @@ products (incl. variations). The lead-magnet that cross-sells the paid suite.
 - 2026-06-05 (scaffold) — Folder + `CLAUDE.md` (MVP spec) + this plan created.
   Slug registered server-side in CLM. No plugin code yet.
 
-**Next up:** Phase 6 (cross-sell panel + release) — after the Phase 5 branch is merged.
+**Next up:** MVP feature-complete. Remaining ops (not plugin code): register the
+free product on the storefront, and verify `/update-check` end-to-end once CLM is
+reachable + a release is published via `tools/build-release.sh`.
 
 ---
 
@@ -107,8 +116,10 @@ products (incl. variations). The lead-magnet that cross-sells the paid suite.
 - [x] Don't copy revisions or comments by default (comments opt-in via setting).
 
 ## Phase 6 — Cross-sell (decision #3 — tasteful only) + release
-- [ ] One dismissible "More by Chada" panel on the plugin's own settings screen +
+- [x] One dismissible "More by Chada" panel on the plugin's own settings screen +
       a small footer link. **NO** store-wide notices, **NO** activation redirect,
-      **NO** dashboard nag.
-- [ ] `tools/build-release.sh` → ZIP + `manifest.json` into the CLM releases dir.
-- [ ] Storefront listing as a free product (funnel to the paid suite).
+      **NO** dashboard nag. (`Admin\CrossSell` + `assets/css/settings.css`,
+      per-user `cdup_crosssell_dismissed` meta.)
+- [x] `tools/build-release.sh` → ZIP + `manifest.json` into the CLM releases dir.
+- [ ] Storefront listing as a free product (funnel to the paid suite). — OPS task,
+      done on the storefront/CLM, not in this plugin's code.

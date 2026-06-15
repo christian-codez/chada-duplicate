@@ -1,14 +1,15 @@
 # Chada Duplicate — plugin notes for Claude
 
-**STATUS: Phases 0–5 built.** Merged: scaffold + **Updater** (free), the **core
-duplicator** (row/bulk on posts/pages/CPTs, Screen-A notices), the **editor
-"Copy to a new draft"** button, and **WooCommerce product cloning**
-(`ProductDuplicator`). The **Settings page** (`Settings` + `Admin\SettingsPage`:
-post types, default status, title suffix, also-copy author/comments/price,
-excluded meta keys, allowed roles) + the Plugins-row "Settings" link is on
-`feature/phase-5-settings`, awaiting review. Settings drive the duplicator. Only
-Phase 6 (cross-sell panel + release) remains — see `BUILD-PLAN.md`. This file
-remains the contract/spec.
+**STATUS: Phases 0–6 built — MVP feature-complete.** Merged: scaffold +
+**Updater** (free), the **core duplicator** (row/bulk on posts/pages/CPTs,
+Screen-A notices), the **editor "Copy to a new draft"** button, **WooCommerce
+product cloning** (`ProductDuplicator`), and the **Settings page**. The
+**"More by Chada" cross-sell panel** (`Admin\CrossSell` + `assets/css/settings.css`,
+Screen D — dismissible per-user, footer link) and the **release tooling**
+(`tools/build-release.sh` → ZIP + `manifest.json`) are on
+`feature/phase-6-crosssell`, awaiting review. Remaining ops (not code): register
+the free product on the storefront + verify `/update-check` end-to-end. This
+file remains the contract/spec.
 
 > **Design handoff** lives in `design_handoff_chada_clone/` (titled "Chada
 > Clone" — an earlier working name; the shipping product is **Chada Duplicate**).
