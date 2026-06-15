@@ -3,15 +3,28 @@
  *
  * Scoped to the one custom-styled surface in the plugin: the "More by Chada"
  * cross-sell panel (design handoff, Screen D). Everything else on the settings
- * page inherits native wp-admin styling. Chada accent: #11776e.
+ * page inherits native wp-admin styling.
+ *
+ * Brand tokens (Chada sienna):
+ *   --chada-brand        #c75a0a  primary actions, links, accents
+ *   --chada-brand-deep   #a1480a  hover / pressed, text on tint
+ *   --chada-brand-soft   #e07b22  gradients, secondary accent
+ *   --chada-brand-tint   #f7e9dc  icon wells, pills, focus ring
+ *   --chada-brand-tint-2 #fbf2e8  subtle wash / inline-code bg
  */
 
 .cdup-crosssell {
+	--chada-brand: #c75a0a;
+	--chada-brand-deep: #a1480a;
+	--chada-brand-soft: #e07b22;
+	--chada-brand-tint: #f7e9dc;
+	--chada-brand-tint-2: #fbf2e8;
+
 	max-width: 1200px;
 	margin: 24px 0 12px;
 	background: #fff;
 	border: 1px solid #e4e6e9;
-	border-top: 3px solid #11776e;
+	border-top: 3px solid var( --chada-brand );
 	border-radius: 10px;
 	box-shadow: 0 1px 3px rgba( 0, 0, 0, 0.06 );
 	padding: 20px 24px 24px;
@@ -32,7 +45,7 @@
 	width: 48px;
 	height: 48px;
 	border-radius: 10px;
-	background: #11776e;
+	background: linear-gradient( 135deg, var( --chada-brand ), var( --chada-brand-soft ) );
 	color: #fff;
 }
 
@@ -98,8 +111,8 @@
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-	background: #f1f7f6;
-	border: 1px solid #dcebe9;
+	background: var( --chada-brand-tint-2 );
+	border: 1px solid var( --chada-brand-tint );
 	border-radius: 10px;
 	padding: 16px;
 }
@@ -111,8 +124,9 @@
 	width: 44px;
 	height: 44px;
 	border-radius: 10px;
+	/* White well on the tinted card pops the brand-coloured icon. */
 	background: #fff;
-	color: #11776e;
+	color: var( --chada-brand );
 	margin-bottom: 12px;
 }
 
@@ -139,7 +153,7 @@
 
 .cdup-crosssell__link {
 	margin-top: auto;
-	color: #11776e;
+	color: var( --chada-brand );
 	font-weight: 600;
 	font-size: 13px;
 	text-decoration: none;
@@ -147,6 +161,6 @@
 
 .cdup-crosssell__link:hover,
 .cdup-crosssell__link:focus {
-	color: #0d5d56;
+	color: var( --chada-brand-deep );
 	text-decoration: underline;
 }
