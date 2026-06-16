@@ -74,7 +74,7 @@ class EditorButton {
 			true
 		);
 
-		wp_set_script_translations( self::SCRIPT_HANDLE, 'chada-duplicate' );
+		wp_set_script_translations( self::SCRIPT_HANDLE, 'chada-duplicate', CHADA_DUP_DIR . 'languages' );
 
 		wp_localize_script(
 			self::SCRIPT_HANDLE,

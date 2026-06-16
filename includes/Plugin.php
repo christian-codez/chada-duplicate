@@ -49,7 +49,9 @@ final class Plugin {
 	 * @return void
 	 */
 	public function boot() {
-		load_plugin_textdomain( 'chada-duplicate', false, dirname( CHADA_DUP_BASENAME ) . '/languages' );
+		// Load translations on `init` (WP 6.7+ warns if a textdomain is loaded
+		// earlier than that). The bundled .mo/.json live in /languages.
+		add_action( 'init', array( $this, 'load_textdomain' ) );
 
 		// Auto-updates from the CHADA marketplace (free product — no license gating).
 		$update_client = new UpdateClient();
@@ -63,5 +65,14 @@ final class Plugin {
 			( new SettingsPage() )->register();
 			( new CrossSell() )->register();
 		}
+	}
+
+	/**
+	 * Load the plugin text domain (hooked on `init`).
+	 *
+	 * @return void
+	 */
+	public function load_textdomain() {
+		load_plugin_textdomain( 'chada-duplicate', false, dirname( CHADA_DUP_BASENAME ) . '/languages' );
 	}
 }
