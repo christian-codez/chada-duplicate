@@ -55,6 +55,18 @@ class Updater {
 	}
 
 	/**
+	 * True when the admin is doing a manual "Check Again"
+	 * (wp-admin/update-core.php?force-check=1). In that case we bypass the
+	 * update-check cache and re-query the platform immediately, instead of
+	 * waiting out the 12h TTL.
+	 *
+	 * @return bool
+	 */
+	private function is_force_check() {
+		return ! empty( $_GET['force-check'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	}
+
+	/**
 	 * `update_plugins_<host>` callback — advertises an available update to core.
 	 *
 	 * @param array|false $current_update Existing update array (or false).
@@ -64,7 +76,7 @@ class Updater {
 	 * @return array|false
 	 */
 	public function inject_update( $current_update, $plugin_data, $plugin_file, $locales = array() ) {
-		$release = $this->update_client->check();
+		$release = $this->update_client->check( $this->is_force_check() );
 		if ( ! $release || empty( $release['available'] ) ) {
 			return $current_update;
 		}
@@ -98,7 +110,7 @@ class Updater {
 			return $api_result;
 		}
 
-		$release = $this->update_client->check();
+		$release = $this->update_client->check( $this->is_force_check() );
 		if ( ! $release ) {
 			return $api_result;
 		}

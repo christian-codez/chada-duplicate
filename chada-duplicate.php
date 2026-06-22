@@ -28,7 +28,16 @@ namespace Chada\Duplicate;
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'CHADA_DUP_VERSION', '0.1.0-dev' );
+/*
+ * Single source of truth for the version is the `Version:` header above —
+ * derive the constant from it so the number never lives in two places.
+ * get_file_data() loads before plugins, so it is always available here.
+ */
+if ( ! defined( 'CHADA_DUP_VERSION' ) ) {
+	$cdup_header = get_file_data( __FILE__, array( 'Version' => 'Version' ) );
+	define( 'CHADA_DUP_VERSION', '' !== $cdup_header['Version'] ? $cdup_header['Version'] : '0.0.0' );
+	unset( $cdup_header );
+}
 define( 'CHADA_DUP_FILE', __FILE__ );
 define( 'CHADA_DUP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'CHADA_DUP_URL', plugin_dir_url( __FILE__ ) );
