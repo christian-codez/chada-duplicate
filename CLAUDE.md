@@ -130,6 +130,13 @@ Row/bulk action or editor button → Duplicator::clone($post_id)
 - **Cross-sell tastefully:** one dismissible panel on the plugin's own settings
   screen + a small "More by Chada" link. NO store-wide nag notices, NO redirect
   on activate. Goodwill is the whole point of shipping this free — don't burn it.
+- **Locale is matched EXACTLY for translations.** This store runs `fr_CA` /
+  `en_CA`, but plugins ship `fr_FR` / `es_ES` / `de_DE`. WordPress loads
+  `{domain}-{locale}.mo` by exact locale, so a `fr_CA` site gets NO French from a
+  `fr_FR`-only plugin — it silently falls back to English. `Plugin` adds a
+  regional fallback (`load_textdomain_mofile` + `load_script_translation_file`)
+  mapping `fr_CA`→`fr_FR` etc. NB: the sibling plugins (woofraudguard, …) ship
+  `fr_FR` only and hit the same issue on this store — they'd want the same fix.
 - **Settings API sanitize gotchas** (learned in Phase 5): WordPress calls the
   `register_setting` sanitize callback **twice on the first save**, the second
   time with your already-sanitized *array* as input — so any field that does

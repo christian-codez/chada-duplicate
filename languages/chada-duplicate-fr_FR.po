@@ -1,0 +1,261 @@
+# Translation of Chada Duplicate in French
+# This file is distributed under the GPL v2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Chada Duplicate 0.1.0-dev\n"
+"Report-Msgid-Bugs-To: https://shop.chadacreatives.com/chada-duplicate\n"
+"PO-Revision-Date: 2026-06-16 00:00+0000\n"
+"Last-Translator: Chada Creatives\n"
+"Language-Team: French\n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: chada-duplicate\n"
+
+#. Plugin Name of the plugin
+#: includes/Admin/SettingsPage.php:43
+#: includes/Admin/SettingsPage.php:44
+#: includes/Admin/SettingsPage.php:109
+msgid "Chada Duplicate"
+msgstr "Chada Duplicate"
+
+#. Plugin URI of the plugin
+msgid "https://shop.chadacreatives.com/chada-duplicate"
+msgstr "https://shop.chadacreatives.com/chada-duplicate"
+
+#. Description of the plugin
+msgid "One-click duplicate / clone for posts, pages, public custom post types, and WooCommerce products (including variations). Fast, complete clones that copy meta, taxonomies, the featured image, and full product data."
+msgstr "Duplication / clonage en un clic pour les articles, les pages, les types de publication personnalisés publics et les produits WooCommerce (variations incluses). Des clones rapides et complets qui copient les métadonnées, les taxonomies, l’image mise en avant et toutes les données produit."
+
+#. Author of the plugin
+msgid "Chada Creatives"
+msgstr "Chada Creatives"
+
+#. Author URI of the plugin
+msgid "https://chadacreatives.com"
+msgstr "https://chadacreatives.com"
+
+#: includes/Admin/CrossSell.php:47
+msgid "Cart Recovery"
+msgstr "Cart Recovery"
+
+#: includes/Admin/CrossSell.php:48
+msgid "Win back abandoned carts automatically."
+msgstr "Récupérez automatiquement les paniers abandonnés."
+
+#: includes/Admin/CrossSell.php:53
+msgid "AI Content"
+msgstr "AI Content"
+
+#: includes/Admin/CrossSell.php:54
+msgid "Generate product descriptions in seconds."
+msgstr "Générez des descriptions de produits en quelques secondes."
+
+#: includes/Admin/CrossSell.php:59
+msgid "Woo Schema"
+msgstr "Woo Schema"
+
+#: includes/Admin/CrossSell.php:60
+msgid "Rich-result schema for better search listings."
+msgstr "Schéma de résultats enrichis pour de meilleures fiches de recherche."
+
+#: includes/Admin/CrossSell.php:65
+msgid "WooFraudGuard"
+msgstr "WooFraudGuard"
+
+#: includes/Admin/CrossSell.php:66
+msgid "Score and block fraudulent orders."
+msgstr "Évaluez et bloquez les commandes frauduleuses."
+
+#: includes/Admin/CrossSell.php:71
+msgid "Activity Monitor"
+msgstr "Activity Monitor"
+
+#: includes/Admin/CrossSell.php:72
+msgid "See who changed what, and when."
+msgstr "Voyez qui a changé quoi, et quand."
+
+#: includes/Admin/CrossSell.php:159
+#: includes/Admin/CrossSell.php:199
+msgid "More by Chada"
+msgstr "More by Chada"
+
+#: includes/Admin/CrossSell.php:160
+msgid "Free and paid tools that pair well with Chada Duplicate — no upsell, no lock-in."
+msgstr "Des outils gratuits et payants qui se marient bien avec Chada Duplicate — sans vente forcée, sans dépendance."
+
+#: includes/Admin/CrossSell.php:164
+msgid "Dismiss"
+msgstr "Masquer"
+
+#: includes/Admin/CrossSell.php:175
+msgid "Learn more"
+msgstr "En savoir plus"
+
+#: includes/Admin/EditorButton.php:54
+#: assets/js/editor.js:38
+msgid "Copy to a new draft"
+msgstr "Copier vers un nouveau brouillon"
+
+#. translators: %s: post title.
+#: includes/Admin/ListActions.php:124
+msgid "Duplicate &#8220;%s&#8221;"
+msgstr "Dupliquer &#8220;%s&#8221;"
+
+#: includes/Admin/ListActions.php:125
+#: includes/Admin/ListActions.php:138
+msgid "Duplicate"
+msgstr "Dupliquer"
+
+#: includes/Admin/ListActions.php:157
+msgid "No item was specified to duplicate."
+msgstr "Aucun élément à dupliquer n’a été spécifié."
+
+#: includes/Admin/ListActions.php:163
+msgid "You are not allowed to duplicate this item."
+msgstr "Vous n’êtes pas autorisé à dupliquer cet élément."
+
+#. translators: %s: title of the duplicated item, shown in quotes.
+#: includes/Admin/Notices.php:63
+msgid "&#8216;%s&#8217; duplicated."
+msgstr "&#8216;%s&#8217; dupliqué."
+
+#: includes/Admin/Notices.php:64
+msgid "Item duplicated."
+msgstr "Élément dupliqué."
+
+#: includes/Admin/Notices.php:70
+msgid "Edit the copy &rarr;"
+msgstr "Modifier la copie &rarr;"
+
+#: includes/Admin/Notices.php:92
+msgid "No items were duplicated."
+msgstr "Aucun élément n’a été dupliqué."
+
+#. translators: %s: number of duplicated products.
+#: includes/Admin/Notices.php:102
+msgid "%s product duplicated"
+msgid_plural "%s products duplicated"
+msgstr[0] "%s produit dupliqué"
+msgstr[1] "%s produits dupliqués"
+
+#: includes/Admin/Notices.php:106
+msgid "— including variations &amp; gallery images."
+msgstr "— variations et images de galerie incluses."
+
+#. translators: %s: number of duplicated items.
+#: includes/Admin/Notices.php:110
+msgid "%s item duplicated"
+msgid_plural "%s items duplicated"
+msgstr[0] "%s élément dupliqué"
+msgstr[1] "%s éléments dupliqués"
+
+#: includes/Admin/Notices.php:124
+msgid "View drafts &rarr;"
+msgstr "Voir les brouillons &rarr;"
+
+#: includes/Admin/Notices.php:136
+msgid "The item could not be duplicated. Please try again."
+msgstr "Impossible de dupliquer l’élément. Veuillez réessayer."
+
+#: includes/Admin/SettingsPage.php:61
+msgid "Settings"
+msgstr "Réglages"
+
+#: includes/Admin/SettingsPage.php:83
+msgid "Post types"
+msgstr "Types de contenu"
+
+#: includes/Admin/SettingsPage.php:84
+msgid "Enable on"
+msgstr "Activer pour"
+
+#: includes/Admin/SettingsPage.php:86
+msgid "Copy behavior"
+msgstr "Comportement de copie"
+
+#: includes/Admin/SettingsPage.php:87
+msgid "Default status"
+msgstr "Statut par défaut"
+
+#: includes/Admin/SettingsPage.php:88
+msgid "Title suffix"
+msgstr "Suffixe du titre"
+
+#: includes/Admin/SettingsPage.php:89
+msgid "Also copy"
+msgstr "Copier aussi"
+
+#: includes/Admin/SettingsPage.php:91
+msgid "Excluded meta keys"
+msgstr "Clés méta exclues"
+
+#: includes/Admin/SettingsPage.php:92
+msgid "Meta keys to skip"
+msgstr "Clés méta à ignorer"
+
+#: includes/Admin/SettingsPage.php:94
+msgid "Permissions"
+msgstr "Autorisations"
+
+#: includes/Admin/SettingsPage.php:95
+msgid "Roles allowed to duplicate"
+msgstr "Rôles autorisés à dupliquer"
+
+#: includes/Admin/SettingsPage.php:131
+msgid "Show the Duplicate action on these content types."
+msgstr "Afficher l’action Dupliquer pour ces types de contenu."
+
+#: includes/Admin/SettingsPage.php:135
+msgid "Custom fields (post meta) with these keys are not copied. One key per line."
+msgstr "Les champs personnalisés (post meta) ayant ces clés ne sont pas copiés. Une clé par ligne."
+
+#: includes/Admin/SettingsPage.php:139
+msgid "Only users with one of these roles see the Duplicate action. Administrators always can."
+msgstr "Seuls les utilisateurs ayant l’un de ces rôles voient l’action Dupliquer. Les administrateurs le peuvent toujours."
+
+#: includes/Admin/SettingsPage.php:160
+msgid "Draft"
+msgstr "Brouillon"
+
+#: includes/Admin/SettingsPage.php:161
+msgid "Same as original"
+msgstr "Identique à l’original"
+
+#: includes/Admin/SettingsPage.php:179
+msgid "Appended to the cloned title, e.g. \" (copy)\"."
+msgstr "Ajouté au titre cloné, p. ex. \" (copie)\"."
+
+#: includes/Admin/SettingsPage.php:184
+msgid "Author"
+msgstr "Auteur"
+
+#: includes/Admin/SettingsPage.php:185
+msgid "Comments"
+msgstr "Commentaires"
+
+#: includes/Admin/SettingsPage.php:187
+msgid "Product price"
+msgstr "Prix du produit"
+
+#: includes/Admin/SettingsPage.php:213
+msgid "Administrators always have access."
+msgstr "Les administrateurs ont toujours accès."
+
+#: includes/Duplicator.php:58
+msgid "The item to duplicate could not be found."
+msgstr "Impossible de trouver l’élément à dupliquer."
+
+#: includes/ProductDuplicator.php:39
+msgid "That product could not be found."
+msgstr "Impossible de trouver ce produit."
+
+#: includes/ProductDuplicator.php:63
+msgid "The product could not be duplicated."
+msgstr "Impossible de dupliquer le produit."
+
+#: assets/js/editor.js:39
+msgid "Duplicating…"
+msgstr "Duplication…"

@@ -1,0 +1,21 @@
+{
+    "translation-revision-date": "2026-06-16 00:00+0000",
+    "generator": "WP-CLI\/2.6.0",
+    "source": "assets\/js\/editor.js",
+    "domain": "messages",
+    "locale_data": {
+        "messages": {
+            "": {
+                "domain": "messages",
+                "lang": "fr_FR",
+                "plural-forms": "nplurals=2; plural=(n > 1);"
+            },
+            "Copy to a new draft": [
+                "Copier vers un nouveau brouillon"
+            ],
+            "Duplicating\u2026": [
+                "Duplication\u2026"
+            ]
+        }
+    }
+}
